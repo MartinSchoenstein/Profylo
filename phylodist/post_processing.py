@@ -1,4 +1,4 @@
-import PhyloDist.pre_processing as pp
+import PhyloDist_dev.pre_processing as pp
 import numpy as np
 import networkx as nx
 from Bio import Phylo
@@ -9,6 +9,7 @@ import pandas as pd
 from scipy.cluster.hierarchy import dendrogram, linkage
 from matplotlib import pyplot as plt
 from scipy.cluster.hierarchy import fcluster
+from scipy.spatial.distance import squareform
 import os
 import urllib.request
 from goatools.obo_parser import GODag
@@ -23,12 +24,11 @@ def input_modules(x):
     if isinstance(x, list):
         return x
     elif isinstance(x, str):
-        with open(x, "r", encoding="utf-8") as f:
-            l = l.strip().strip("{}")
-            liste = [elem.strip("'") for elem in l.split(", ")]
+        with open(x, "r") as f:
+            liste = f.read().strip().split(",")
         return liste
     else:
-        ("Only accepted types for x are: a path to a graph_modules() output file or a list type variable")
+        ("Only accepted types for x are: a path to a txt file (one line with genes separated by a ,) or a list type variable")
 
 
 
@@ -39,6 +39,11 @@ def hierarchical_dendrogram(
     path = None              #Path to download the dendrogram plot
 ):
     dfx = pp.input(x, test_binary = False)
+    dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
+    dfx[dfx < 0] = 0
+    dfx = 1 - dfx
+    np.fill_diagonal(dfx.values, 0)
+    dfx = squareform(dfx)
     L = linkage(dfx, method)
     plt.figure(figsize=(25, 10))
     dendrogram(L)
@@ -57,6 +62,7 @@ def hierarchical_clustering(
 ):
     dfx =  pp.input(x, test_binary = False)
     dfx = dfx.apply(pd.to_numeric, errors="coerce").fillna(0)
+    dfx = squareform(dfx)
     L = linkage(x, method)
     if criterion == "distance":
             clusters = fcluster(L, threshold, "distance")
