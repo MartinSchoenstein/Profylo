@@ -1,4 +1,4 @@
-import PhyloDist_dev.pre_processing as pp
+import phylodist.pre_processing as pp
 import numpy as np
 import networkx as nx
 from Bio import Phylo
@@ -25,10 +25,12 @@ def input_modules(x):
         return x
     elif isinstance(x, str):
         with open(x, "r") as f:
-            liste = f.read().strip().split(",")
+            liste = []
+            for l in f:
+                liste.append(f.strip().split(","))
         return liste
     else:
-        ("Only accepted types for x are: a path to a txt file (one line with genes separated by a ,) or a list type variable")
+        ("Only accepted types for x are: a path to a txt file or a list type variable")
 
 
 
@@ -114,7 +116,8 @@ def graph_modules(
 #Function to process GO enrichment test on a list of genes, return list of GO therms with their corrected p-values ​​when < 0.05, can dl full results with path
 def go_enrichment(
     x,                       #List of genes (UNIPROT ID)
-    path = None              #Path to download full enrichment results
+    path = None,             #Path to a dir to download full enrichment results
+    complete_results = False
 ):
     go_obo_url = "http://purl.obolibrary.org/obo/go.obo"
     go_gaf_url = "http://current.geneontology.org/annotations/goa_human.gaf.gz"
@@ -127,12 +130,22 @@ def go_enrichment(
     gene2go = read_gaf("goa_human.gaf", godag=godag, namespace=None)
     genes_fond = set(gene2go.keys())
     x = input_modules(x)
-    goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
-    results = goeaobj.run_study(x)
-    data = [(res.GO, res.p_fdr_bh) for res in results if res.p_fdr_bh < 0.05]
-    df = pd.DataFrame(data, columns = ["GO", "p-value(bh)"])
+    df = pd.DataFrame(columns = ["length","GO/P-value(bh)_1", "GO/P-value(bh)_2", "GO/P-value(bh)_3", "GO/P-value(bh)_4", "GO/P-value(bh)_5"])
+    for i, module in enumerate(x):
+        goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
+        results = goeaobj.run_study(module)
+        results = sorted(results, key = lambda x: x.p_fdr_bh)[:5]
+        data = {}
+        for j, res in enumerate(results):
+            data["length"] = len(module)
+            data["GO/P-value(bh)_" + str(j+1)] = [res.GO, res.name, res.p_fdr_bh]
+        df.loc[len(df)] = data
+        if complete_results is True:
+            path2 = path + "/" + str(i) + ".tsv"
+            goeaobj.wr_tsv(path2, results)
     if path is not None:
-        goeaobj.wr_tsv(path, results)
+        path1 = path + "resume_results.csv"
+        df.to_csv(path1, index = False)
     return df
 
 
@@ -185,4 +198,4 @@ def profils_heatmap(
         sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1))
     plt.show()
     if path is not None:
-        plt.savefig(path)
+        plt.savefig(path, bbox_inches='tight')
