@@ -1,5 +1,5 @@
-import PhyloDist.distances as dst
-import PhyloDist.pre_processing as pp
+import phylodist.distances as dst
+import phylodist.pre_processing as pp
 import warnings
 warnings.filterwarnings('ignore')
 
