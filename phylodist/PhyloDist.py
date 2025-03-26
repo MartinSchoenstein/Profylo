@@ -82,4 +82,5 @@ def distance_profiles(
         if method == "cotransition" or method == "Cotransition":
             p_value.to_csv(path, index = True)
         result.to_csv(path, index=True),
+    print("Done.")
     return result
