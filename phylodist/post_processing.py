@@ -16,6 +16,7 @@ from goatools.obo_parser import GODag
 from goatools.associations import read_gaf
 from goatools.test_data.genes_NCBI_9606_ProteinCoding import GENEID2NT
 from goatools.goea.go_enrichment_ns import GOEnrichmentStudy
+from ete3 import Tree, TreeNode
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -199,3 +200,84 @@ def profils_heatmap(
     plt.show()
     if path is not None:
         plt.savefig(path, bbox_inches='tight')
+
+
+def state_on_nodes(x):
+    if hasattr(x, "state"):
+        return(x.state)
+    count = 0
+    for child in x.children:
+        state = state_on_nodes(child)
+        if state == 1:
+            count = count + 1
+    if count > 0:
+        x.add_feature("state",  1)
+    else:
+        x.add_feature("state", 0)
+    return(x.state)
+
+
+
+#Function to compute a parsimony score from the clusters
+def parsimony_measure(
+    x,                  #List of list of genes (UNIPROT ID) or txt file with a line for each cluster
+    profils,            #Profils to use to report presence/absence, path to csv or a pandas dataframe
+    path_tree,          #Path to Newick tree to use
+    path = None,        #Path to download parsimony score to a txt file, must be a dir if return_tree is True
+    dl_tree = False #If return_tree is true, return the mean tree used for each cluster
+):
+    profils = pp.input(profils, test_binary = False)
+    x = input_modules(x)
+    liste_parsimony = []
+    for i, module in enumerate(x):
+        liste_tree = []
+        for gene in module:
+            t = Tree(path_tree, format = 8)
+            for leaf in TreeNode.iter_leaves(t):
+                leaf.add_feature("state", profils.loc[gene, leaf.name])
+                if leaf.name == 9606 or leaf.name == "9606":
+                    leaf.state = 1
+            AC = TreeNode.get_tree_root(t)
+            state_on_nodes(AC)
+            higher_kids = 0
+            for node in t.traverse():
+                if node.state == 1:
+                    count = 0
+                    for child in node.children:
+                        if child.state == 1:
+                            count = count + 1
+                    if count >= 2 :
+                        if len(node.get_leaves()) > higher_kids:
+                            higher_kids = len(node.get_leaves())
+                            oldest_node = node
+            all_kids = list(oldest_node.iter_descendants())
+            for node in t.traverse():
+                if node != oldest_node:
+                    if node.state == 1:
+                        if node not in all_kids:
+                            node.state = 0
+            liste_tree.append(t)
+        t_mean = Tree(path_tree, format = 8)
+        parsimony = 0 
+        for node in t_mean.traverse(strategy="postorder"):
+            mean = 0
+            for tree in liste_tree:
+                n = tree&node.name
+                mean = mean + int(n.state)
+            mean = mean / len(liste_tree)
+            node.add_feature("state", mean)
+            if node.state >= 0.5:
+                for child in node.children:
+                    if child.state < 0.5:
+                        parsimony = parsimony + 1
+        liste_parsimony.append(parsimony)
+        if dl_tree is True and path is not None:
+            path_tree = path + str(i) + ".nhx"
+            t_mean.write(outfile=path_tree, format=8, features=["state"])
+    if path is not None:
+        if dl_tree is True:
+            path_liste = path + "parsimony_scores.txt"
+        with open(path_liste, 'w') as f:
+            for l in liste_parsimony:
+                f.write(str(l) + "\n")
+    return liste_parsimony
