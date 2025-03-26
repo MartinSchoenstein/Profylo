@@ -11,7 +11,7 @@ authors = [
 description = "Compute distances between phylogenetic profiles with different metrics and obtain functional modules"
 readme = "README.rst"
 version = "1.0.0"
-requires-python = ">=3.1"
+requires-python = "<=3.12"
 keywords = [
     "phylogenetic-profiles",
     "distance-metrics",
@@ -38,7 +38,8 @@ dependencies = [
     'matplotlib==3.9.4',
     'seaborn==0.13.2',
     'urllib3==2.2.3',
-    'goatools==1.4.12'
+    'goatools==1.4.12',
+    'ete3==3.1.3'
 ]
 
 
