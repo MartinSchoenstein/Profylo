@@ -16,6 +16,8 @@ from goatools.obo_parser import GODag
 from goatools.associations import read_gaf
 from goatools.test_data.genes_NCBI_9606_ProteinCoding import GENEID2NT
 from goatools.goea.go_enrichment_ns import GOEnrichmentStudy
+import markov_clustering as mc
+from networkx.algorithms.community import fast_label_propagation_communities
 from ete3 import Tree, TreeNode
 import warnings
 warnings.filterwarnings('ignore')
@@ -92,18 +94,22 @@ def graph_modules(
 ):
     dfx = pp.input(x, test_binary = False)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
         np.fill_diagonal(x_mask.values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(1)
         x_mask = dfx.mask(dfx > threshold, 1)
         np.fill_diagonal(x_mask.values, 1)
         x_mask = 1 - x_mask
     if distance in ["pcs", "PCS"]:
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
         max = x_mask.max()
         x_mask = x_mask/max
         np.fill_diagonal(x_mask.values, 0)
     G = nx.from_pandas_adjacency(x_mask)
+    G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
     modules_recap = []
     for c in sorted(nx.connected_components(G), key=len, reverse=True):
         modules_recap.append(list(c))
@@ -114,11 +120,86 @@ def graph_modules(
     return modules_recap
 
 
+def markov_clustering(
+    x,                       #Distance to use
+    distance,                #Metric used to obtain distances
+    path = None              #Path to download the modules
+):
+    dfx = pp.input(x, test_binary = False)
+    if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
+        dfx[dfx < 0] = 0
+        np.fill_diagonal(dfx.values, 0)
+    if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(1)
+        np.fill_diagonal(dfx.values, 1)
+        dfx = 1 - dfx
+    if distance in ["pcs", "PCS"]:
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
+        dfx[dfx < 0] = 0
+        max = dfx.max()
+        dfx = dfx/max
+        np.fill_diagonal(dfx.values, 0)
+    G = nx.from_pandas_adjacency(dfx)
+    G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
+    matrix = nx.to_numpy_array(G)
+    result = mc.run_mcl(matrix)
+    clusters = mc.get_clusters(result)
+    genes = dfx.index.tolist()
+    clusters_recap = []
+    for c in clusters:
+        liste = []
+        for g in c:
+            liste.append(genes[g])
+        clusters_recap.append(liste)
+    if path is not None:
+        with open(path, "w") as f:
+            for m in clusters_recap:
+                f.write(",".join(m) + "\n")
+    return clusters_recap
+
+
+def label_propagation(
+    x,                       #Distance to use
+    distance,                #Metric used to obtain distances
+    threshold,               #Trust treshold to use for creating edges
+    seed = None,             #Seed for label propagation
+    path = None              #Path to download the modules
+):
+    dfx = pp.input(x, test_binary = False)
+    if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
+        x_mask = dfx.mask(dfx < threshold, 0)
+        np.fill_diagonal(x_mask.values, 0)
+    if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(1)
+        x_mask = dfx.mask(dfx > threshold, 1)
+        np.fill_diagonal(x_mask.values, 1)
+        x_mask = 1 - x_mask
+    if distance in ["pcs", "PCS"]:
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
+        x_mask = dfx.mask(dfx < threshold, 0)
+        max = x_mask.max()
+        x_mask = x_mask/max
+        np.fill_diagonal(x_mask.values, 0)
+    G = nx.from_pandas_adjacency(x_mask)
+    G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
+    F = fast_label_propagation_communities(G, seed = seed, weight = None)
+    label_recap = []
+    for c in sorted(F, key=len, reverse=True):
+        label_recap.append(list(c))
+    if path is not None:
+        with open(path, "w") as f:
+            for m in label_recap:
+                f.write(",".join(m) + "\n")
+    return label_recap
+
+
 #Function to process GO enrichment test on a list of genes, return list of GO therms with their corrected p-values ​​when < 0.05, can dl full results with path
 def go_enrichment(
     x,                       #List of genes (UNIPROT ID)
     path = None,             #Path to a dir to download full enrichment results
-    complete_results = False
+    complete_results = False #If True, download original results files too
 ):
     go_obo_url = "http://purl.obolibrary.org/obo/go.obo"
     go_gaf_url = "http://current.geneontology.org/annotations/goa_human.gaf.gz"
@@ -216,6 +297,51 @@ def state_on_nodes(x):
         x.add_feature("state", 0)
     return(x.state)
 
+#Function to annotate a tree with profils data
+def tree_annotation(
+    x,                  #List of genes (UNIPROT ID) or txt file with all genes in one line
+    profils,            #Profils to use to report presence/absence, path to csv or a pandas dataframe
+    path_tree,          #Path to Newick tree to use
+    path = None         #Path to download the tree
+):
+    profils = pp.input(profils, test_binary = False)
+    x = input_modules(x)
+    liste_tree = []
+    for gene in x:
+        t = Tree(path_tree, format = 8)
+        for leaf in TreeNode.iter_leaves(t):
+            leaf.add_feature("state", profils.loc[gene, leaf.name])
+        AC = TreeNode.get_tree_root(t)
+        state_on_nodes(AC)
+        higher_kids = 0
+        for node in t.traverse():
+            if node.state == 1:
+                count = 0
+                for child in node.children:
+                    if child.state == 1:
+                        count = count + 1
+                if count >= 2 :
+                    if len(node.get_leaves()) > higher_kids:
+                        higher_kids = len(node.get_leaves())
+                        oldest_node = node
+        all_kids = list(oldest_node.iter_descendants())
+        for node in t.traverse():
+            if node != oldest_node:
+                if node.state == 1:
+                    if node not in all_kids:
+                        node.state = 0
+        liste_tree.append(t)
+    t_mean = Tree(path_tree, format = 8)
+    for node in t_mean.traverse(strategy="postorder"):
+        mean = 0
+        for tree in liste_tree:
+            n = tree&node.name
+            mean = mean + int(n.state)
+        mean = mean / len(liste_tree)
+        node.add_feature("state", mean)
+    if path is not None:
+        t_mean.write(outfile=path, format=8, features=["state"])
+    return t_mean
 
 
 #Function to compute a parsimony score from the clusters
@@ -235,8 +361,6 @@ def parsimony_measure(
             t = Tree(path_tree, format = 8)
             for leaf in TreeNode.iter_leaves(t):
                 leaf.add_feature("state", profils.loc[gene, leaf.name])
-                if leaf.name == 9606 or leaf.name == "9606":
-                    leaf.state = 1
             AC = TreeNode.get_tree_root(t)
             state_on_nodes(AC)
             higher_kids = 0
