@@ -198,18 +198,15 @@ def label_propagation(
 #Function to process GO enrichment test on a list of genes, return list of GO therms with their corrected p-values ​​when < 0.05, can dl full results with path
 def go_enrichment(
     x,                       #List of genes (UNIPROT ID)
+    gene2go,                 #Link to a gene2go file like "http://current.geneontology.org/annotations/goa_human.gaf.gz"
     path = None,             #Path to a dir to download full enrichment results
     complete_results = False #If True, download original results files too
 ):
-    go_obo_url = "http://purl.obolibrary.org/obo/go.obo"
-    go_gaf_url = "http://current.geneontology.org/annotations/goa_human.gaf.gz"
+    go_obo_url = "http://current.geneontology.org/ontology/go-basic.obo"
     if not os.path.exists("go.obo"):
         urllib.request.urlretrieve(go_obo_url, "go.obo")
-    if not os.path.exists("goa_human.gaf"):
-        urllib.request.urlretrieve(go_gaf_url, "goa_human.gaf.gz")
-        os.system("gunzip goa_human.gaf.gz")
     godag = GODag("go.obo")
-    gene2go = read_gaf("goa_human.gaf", godag=godag, namespace=None)
+    gene2go = read_gaf("http://current.geneontology.org/annotations/goa_human.gaf.g", godag=godag, namespace=None)
     genes_fond = set(gene2go.keys())
     x = input_modules(x)
     df = pd.DataFrame(columns = ["length","GO/P-value(bh)_1", "GO/P-value(bh)_2", "GO/P-value(bh)_3", "GO/P-value(bh)_4", "GO/P-value(bh)_5"])
@@ -278,9 +275,9 @@ def profils_heatmap(
         plt.legend(handles=handles, title="Clades", bbox_to_anchor=(0.5, 1.05), loc='lower right', ncol = 3)
     else:
         sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1))
-    plt.show()
     if path is not None:
         plt.savefig(path, bbox_inches='tight')
+    plt.show()
 
 
 def state_on_nodes(x):
@@ -310,7 +307,7 @@ def tree_annotation(
     for gene in x:
         t = Tree(path_tree, format = 8)
         for leaf in TreeNode.iter_leaves(t):
-            leaf.add_feature("state", profils.loc[gene, leaf.name])
+            leaf.add_feature("state", round(profils.loc[gene, leaf.name]))
         AC = TreeNode.get_tree_root(t)
         state_on_nodes(AC)
         higher_kids = 0
@@ -324,6 +321,8 @@ def tree_annotation(
                     if len(node.get_leaves()) > higher_kids:
                         higher_kids = len(node.get_leaves())
                         oldest_node = node
+        print("Last Common Ancestor of ", gene, ": ", oldest_node)
+        print("Number of leaves with a presence: ", sum(round(profils.loc[gene]))/len(profils.loc[gene]))
         all_kids = list(oldest_node.iter_descendants())
         for node in t.traverse():
             if node != oldest_node:
@@ -374,6 +373,8 @@ def parsimony_measure(
                         if len(node.get_leaves()) > higher_kids:
                             higher_kids = len(node.get_leaves())
                             oldest_node = node
+            print("Last Common Ancestor of ", gene, ": ", oldest_node)
+            print("Number of leaves with a presence: ", sum(round(profils.loc[gene]))/len(profils.loc[gene]))
             all_kids = list(oldest_node.iter_descendants())
             for node in t.traverse():
                 if node != oldest_node:
