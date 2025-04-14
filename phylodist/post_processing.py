@@ -390,7 +390,7 @@ def tree_annotation(
         path (str, optional): Path to download the tree. Defaults to None.
 
     Returns:
-        Tree: Annotated tree
+        Tree: Annotated tree with "state" on nodes representing mean presence/absence in the cluster
     """
     profils = pp.input(profils, test_binary = False)
     x = input_module(x)
@@ -443,13 +443,13 @@ def phylogenetic_statistics(
 
     Args:
         x (list, str, Tree): List of list of genes or txt file with a line for each cluster, or annotated Tree.s
-        profils (str, pd.DataFrame): Mandatory if x is not a Tree or a list of Tree, profile matrix.  Defaults to None.
-        path_tree (str): Mandatory if x is not a Tree or a list of Tree, path to Newick tree to use.  Defaults to None.
+        profils (str, pd.DataFrame, optional): Profile matrix. Defaults to None (Mandatory if x is not a Tree or a list of Tree).
+        path_tree (str, optional): Path to Newick tree to use. Defaults to None (Mandatory if x is not a Tree or a list of Tree).
         path (str, optional): Path to download output dataframe, must be a dir if dl_tree is True. Defaults to None.
         dl_tree (bool, optional): If dl_tree is true, return the mean tree used for each cluster. Defaults to False.
 
     Returns:
-        DataFrame: Length, Parsimony, Number of Leaf with a presence, Last common ancestor
+        pd.DataFrame: Length, Parsimony, Number of Leaf with a presence, Last common ancestor
     """
     profils = pp.input(profils, test_binary = False)
     if not isinstance(x, Tree):
