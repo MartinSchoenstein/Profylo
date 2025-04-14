@@ -25,7 +25,10 @@ warnings.filterwarnings('ignore')
 
 def input_modules(x):
     if isinstance(x, list):
-        return x
+        if isinstance(x[0], list):
+            return x
+        else:
+            return [x]
     elif isinstance(x, str):
         with open(x, "r") as f:
             liste = []
@@ -35,14 +38,29 @@ def input_modules(x):
     else:
         ("Only accepted types for x are: a path to a txt file or a list type variable")
 
+def input_module(x):
+    if isinstance(x, list):
+        return x
+    elif isinstance(x, str):
+        with open(x, "r") as f:
+            for l in f:
+                liste = (f.strip().split(","))
+        return liste
+    else:
+        ("Only accepted types for x are: a path to a txt file or a list type variable")
 
-
-#Function to obtain a dendrogram from distances for hierarchical clustering 
 def hierarchical_dendrogram(
-    x,                       #Distances to use
-    method,                  #Method to use for hierarchical clustering : "ward", "average", "weighted", "complete"
-    path = None              #Path to download the dendrogram plot
+    x,                       
+    method,                  
+    path = None              
 ):
+    """Function to obtain the dendrogram linked to hierarchical clustering from distances between profiles
+
+    Args:
+        x (str, pd.DataFrame): Distance matrix
+        method (str): Method to use for hierarchical clustering : "ward", "average", "weighted", "complete"
+        path (str, optional): Path to download the dendrogram plot. Defaults to None.
+    """
     dfx = pp.input(x, test_binary = False)
     dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
     dfx[dfx < 0] = 0
@@ -57,14 +75,25 @@ def hierarchical_dendrogram(
         plt.savefig(path) 
 
 
-#Function for performing hierarchical clustering on distances, returns a list containing the list of genes in each clusters
 def hierarchical_clustering(
-    x,                       #Distance to use
-    method,                  #Method to use for hierarchical clustering : "ward", "average", "weighted", "complete"
-    criterion,               #The way to cut the clusters, by distance or by the number of clusters
-    threshold,               #Threshold to use for cutting clusters
-    path = None              #Path to download the clusters
+    x,                       
+    method,                  
+    criterion,               
+    threshold,               
+    path = None              
 ):
+    """Function for performing hierarchical clustering on distances between profiles
+
+    Args:
+        x (str, pd.DataFrame): Distance matrix
+        method (str): Method to use for hierarchical clustering : "ward", "average", "weighted", "complete"
+        criterion (str): The way to cut the clusters, by "distance" between clusters or by the "number" of clusters 
+        threshold (int): Threshold to use for cutting clusters
+        path (str, optional): Path to download the clusters. Defaults to None.
+
+    Returns:
+        list: Returns a list containing the list of genes in each clusters
+    """
     dfx =  pp.input(x, test_binary = False)
     dfx = dfx.apply(pd.to_numeric, errors="coerce").fillna(0)
     dfx = squareform(dfx)
@@ -85,13 +114,23 @@ def hierarchical_clustering(
     return cluster_recap
 
 
-#Function to represent distance in a graph and extract connected components as modules, returns a list containing the list of genes in each modules
 def graph_modules(
-    x,                       #Distance to use
-    distance,                #Metric used to obtain distances
-    threshold,               #Trust treshold to use for creating nodes
-    path = None              #Path to download the modules
+    x,                       
+    distance,                
+    threshold,               
+    path = None              
 ):
+    """Function to represent distances between profiles in a graph and extract connected components as modules
+
+    Args:
+        x (str, pd.DataFrame): Distance matrix
+        distance (str): Metric used to obtain distances
+        threshold (int): Trust threshold for creating edges
+        path (str, optional): Path to download the modules. Defaults to None.
+
+    Returns:
+        list: Returns a list containing the list of genes in each modules
+    """
     dfx = pp.input(x, test_binary = False)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
@@ -121,10 +160,20 @@ def graph_modules(
 
 
 def markov_clustering(
-    x,                       #Distance to use
-    distance,                #Metric used to obtain distances
-    path = None              #Path to download the modules
+    x,                       
+    distance,                
+    path = None              
 ):
+    """Function to represent distances between profiles in a graph and performe markov clustering
+
+    Args:
+        x (str, pd.DataFrame): Distance matrix
+        distance (str): Metric used to obtain distances
+        path (str, optional): Path to download the modules. Defaults to None.
+
+    Returns:
+        list: Returns a list containing the list of genes in each modules
+    """
     dfx = pp.input(x, test_binary = False)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
@@ -160,12 +209,24 @@ def markov_clustering(
 
 
 def label_propagation(
-    x,                       #Distance to use
-    distance,                #Metric used to obtain distances
-    threshold,               #Trust treshold to use for creating edges
-    seed = None,             #Seed for label propagation
-    path = None              #Path to download the modules
+    x,                       
+    distance,                
+    threshold,               
+    seed = None,             
+    path = None              
 ):
+    """Function to represent distances between profiles in a graph and performe label propagation clustering
+
+    Args:
+        x (str, pd.DataFrame): Distance matrix
+        distance (str): Metric used to obtain distances
+        threshold (int): Trust treshold to use for creating edges
+        seed (int, optional): Seeding for the random part of the label propagation algorithm. Defaults to None.
+        path (str, optional): Path to download the modules. Defaults to None.
+
+    Returns:
+        list: Returns a list containing the list of genes in each modules
+    """
     dfx = pp.input(x, test_binary = False)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
@@ -195,13 +256,23 @@ def label_propagation(
     return label_recap
 
 
-#Function to process GO enrichment test on a list of genes, return list of GO therms with their corrected p-values ​​when < 0.05, can dl full results with path
 def go_enrichment(
-    x,                       #List of genes (UNIPROT ID)
-    gene2go,                 #Link to a gene2go file like "http://current.geneontology.org/annotations/goa_human.gaf.gz"
-    path = None,             #Path to a dir to download full enrichment results
-    complete_results = False #If True, download original results files too
+    x,                       
+    gene2go,                 
+    path = None,             
+    complete_results = False 
 ):
+    """Function to process GO enrichment test on a list of genes
+
+    Args:
+        x (str, list): List of list of genes (UNIPROT ID) or txt file with a line for each cluster
+        gene2go (str): Link to a gene2go file like "http://current.geneontology.org/annotations/goa_human.gaf.gz"
+        path (str, optional): Path to a dir to download full enrichment results. Defaults to None.
+        complete_results (bool, optional): If =True, download full set of results files comming from goatools. Defaults to False.
+
+    Returns:
+        pd.DataFrame: Return resume results for each module
+    """
     go_obo_url = "http://current.geneontology.org/ontology/go-basic.obo"
     if not os.path.exists("go.obo"):
         urllib.request.urlretrieve(go_obo_url, "go.obo")
@@ -228,15 +299,24 @@ def go_enrichment(
     return df
 
 
-#Function to represent profiles on a heatmap
 def profils_heatmap(
-    x,                       #Profiles to use
-    selection = None,        #Genes whose profiles will be represented, if None all profils are represented
-    tree = None,             #Newick tree to order profils, not necessary if ordered = True
-    clades = None,           #Clades to highlight on heatmaps
-    ordered = False,         #If profils are already ordered --> True, else need a Newick tree
-    path = None              #Path to download the heatmap
+    x,                       
+    selection = None,        
+    tree = None,             
+    clades = None,           
+    ordered = False,         
+    path = None              
 ):
+    """Function to represent profiles (presence/absence) on a heatmap
+
+    Args:
+        x (str, pd.DataFrame): Profile matrix
+        selection (list, optional): Genes selection to represent. Defaults to None.
+        tree (str, optional): Newick tree to order profils, not necessary if ordered = True. Defaults to None.
+        clades (list, optional): Clades to highlight on heatmaps. Defaults to None.
+        ordered (bool, optional): True if profils are already ordered else need a Newick tree. Defaults to False.
+        path (str, optional): Path to download the heatmap. Defaults to None.
+    """
     if ordered == False and tree == None:
         raise ValueError("Need a tree to order profiles")
     if clades is not None and tree == None:
@@ -294,20 +374,31 @@ def state_on_nodes(x):
         x.add_feature("state", 0)
     return(x.state)
 
-#Function to annotate a tree with profils data
+
 def tree_annotation(
-    x,                  #List of genes (UNIPROT ID) or txt file with all genes in one line
-    profils,            #Profils to use to report presence/absence, path to csv or a pandas dataframe
-    path_tree,          #Path to Newick tree to use
-    path = None         #Path to download the tree
+    x,                  
+    profils,            
+    path_tree,          
+    path = None         
 ):
+    """Function to reconstruct the evolutionary history of genes on a tree from profiles
+
+    Args:
+        x (list): List of genes or txt file with all genes in one line
+        profils (str, pd.DataFrame): profile matrix
+        path_tree (str): Path to Newick tree to use
+        path (str, optional): Path to download the tree. Defaults to None.
+
+    Returns:
+        Tree: Annotated tree
+    """
     profils = pp.input(profils, test_binary = False)
-    x = input_modules(x)
+    x = input_module(x)
     liste_tree = []
     for gene in x:
         t = Tree(path_tree, format = 8)
         for leaf in TreeNode.iter_leaves(t):
-            leaf.add_feature("state", round(profils.loc[gene, leaf.name]))
+            leaf.add_feature("state", profils.loc[gene, leaf.name])
         AC = TreeNode.get_tree_root(t)
         state_on_nodes(AC)
         higher_kids = 0
@@ -321,8 +412,6 @@ def tree_annotation(
                     if len(node.get_leaves()) > higher_kids:
                         higher_kids = len(node.get_leaves())
                         oldest_node = node
-        print("Last Common Ancestor of ", gene, ": ", oldest_node)
-        print("Number of leaves with a presence: ", sum(round(profils.loc[gene]))/len(profils.loc[gene]))
         all_kids = list(oldest_node.iter_descendants())
         for node in t.traverse():
             if node != oldest_node:
@@ -343,66 +432,54 @@ def tree_annotation(
     return t_mean
 
 
-#Function to compute a parsimony score from the clusters
-def parsimony_measure(
-    x,                  #List of list of genes (UNIPROT ID) or txt file with a line for each cluster
-    profils,            #Profils to use to report presence/absence, path to csv or a pandas dataframe
-    path_tree,          #Path to Newick tree to use
-    path = None,        #Path to download parsimony score to a txt file, must be a dir if return_tree is True
-    dl_tree = False #If return_tree is true, return the mean tree used for each cluster
+def phylogenetic_statistics(
+    x,                  
+    profils = None,            
+    path_tree = None,          
+    path = None,        
+    dl_tree = False 
 ):
+    """Function to compute statistics from a cluster by a phylogenetic tree
+
+    Args:
+        x (list, str, Tree): List of list of genes or txt file with a line for each cluster, or annotated Tree.s
+        profils (str, pd.DataFrame): Mandatory if x is not a Tree or a list of Tree, profile matrix.  Defaults to None.
+        path_tree (str): Mandatory if x is not a Tree or a list of Tree, path to Newick tree to use.  Defaults to None.
+        path (str, optional): Path to download output dataframe, must be a dir if dl_tree is True. Defaults to None.
+        dl_tree (bool, optional): If dl_tree is true, return the mean tree used for each cluster. Defaults to False.
+
+    Returns:
+        DataFrame: Length, Parsimony, Number of Leaf with a presence, Last common ancestor
+    """
     profils = pp.input(profils, test_binary = False)
-    x = input_modules(x)
-    liste_parsimony = []
+    if not isinstance(x, Tree):
+        x = input_modules(x)
+    else:
+        x = [x]
+    df = pd.DataFrame(columns=["Cluster", "Length", "Parsimony", "Presence", "LCA"])
     for i, module in enumerate(x):
-        liste_tree = []
-        for gene in module:
-            t = Tree(path_tree, format = 8)
-            for leaf in TreeNode.iter_leaves(t):
-                leaf.add_feature("state", profils.loc[gene, leaf.name])
-            AC = TreeNode.get_tree_root(t)
-            state_on_nodes(AC)
-            higher_kids = 0
-            for node in t.traverse():
-                if node.state == 1:
-                    count = 0
-                    for child in node.children:
-                        if child.state == 1:
-                            count = count + 1
-                    if count >= 2 :
-                        if len(node.get_leaves()) > higher_kids:
-                            higher_kids = len(node.get_leaves())
-                            oldest_node = node
-            print("Last Common Ancestor of ", gene, ": ", oldest_node)
-            print("Number of leaves with a presence: ", sum(round(profils.loc[gene]))/len(profils.loc[gene]))
-            all_kids = list(oldest_node.iter_descendants())
-            for node in t.traverse():
-                if node != oldest_node:
-                    if node.state == 1:
-                        if node not in all_kids:
-                            node.state = 0
-            liste_tree.append(t)
-        t_mean = Tree(path_tree, format = 8)
-        parsimony = 0 
-        for node in t_mean.traverse(strategy="postorder"):
-            mean = 0
-            for tree in liste_tree:
-                n = tree&node.name
-                mean = mean + int(n.state)
-            mean = mean / len(liste_tree)
-            node.add_feature("state", mean)
+        if isinstance(module, list):
+            t_mean = tree_annotation(module, profils = profils, path_tree = path_tree)
+        else:
+            t_mean = module
+        parsimony = 0
+        presence = 0
+        for node in t_mean.traverse(strategy = "postorder"):
             if node.state >= 0.5:
+                if node.is_leaf():
+                    presence = presence + 1
+                LCA = node.name
                 for child in node.children:
                     if child.state < 0.5:
                         parsimony = parsimony + 1
-        liste_parsimony.append(parsimony)
         if dl_tree is True and path is not None:
-            path_tree = path + str(i) + ".nhx"
-            t_mean.write(outfile=path_tree, format=8, features=["state"])
+            path_tree_dl = path + "/" + str(i + 1) + ".nhx"
+            t_mean.write(outfile=path_tree_dl, format=8, features=["state"])
+        df.loc[i] = [i + 1, 1 if isinstance(module, Tree) else len(module), parsimony, presence, LCA]
     if path is not None:
         if dl_tree is True:
-            path_liste = path + "parsimony_scores.txt"
-        with open(path_liste, 'w') as f:
-            for l in liste_parsimony:
-                f.write(str(l) + "\n")
-    return liste_parsimony
+            path_df = path + "/phylogenetic_statistics.csv"
+        else:
+            path_df = path
+        df.to_csv(path_df, index = False)
+    return df
