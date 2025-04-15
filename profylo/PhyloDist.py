@@ -4,20 +4,36 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-# Main function of the library, allows access to 7 metrics for comparing phylogenetic profiles
 def distance_profiles(
-    method,                 #Name of the distance method to use : "Jaccard", "Hamming", "Pearson", "MI", "PCS", "Cotransition", "Svd_phy"
-    x,                      #Data to use
-    y=None,                 #Second date source if you want to compare the x profils to y profils and not all x profils to all x profils
-    type = "matrix",        #Type of data source, classic profils matrix or transition vectors matrix
-    #subset_prot=None,
-    confidence=1.5,         #PCS parameter, influence the value of a double match
-    penalty=0.6,            #PCS parameter, influence the value of a doouble missmatch
-    truncation= 0.5,        #SVD-phy parameter, influence the data reduction
-    consecutive = True,     #Cotransition score parameter, when =False only counts one transition in 2 directly consecutive ones
-    tree = None,            #Newick tree to order profils for PCS or Cotransition score
-    path = None             #Path to download distance dataframe
+    method,                 
+    x,                      
+    y=None,                 
+    type = "matrix",        
+    confidence=1.5,         
+    penalty=0.6,            
+    truncation= 0.5,        
+    consecutive = True,     
+    tree = None,            
+    path = None             
 ):
+    """Main function of the library, allows access to 7 metrics for comparing phylogenetic profiles
+
+    Args:
+        method (str): Name of the distance method to use : "Jaccard", "Hamming", "Pearson", "MI", "PCS", "Cotransition", "SVD_phy"
+        x (str, pd.DataFrame): Data to use
+        y (str, pd.DataFrame, optional): Second date source if you want to compare the x profils to y profils and not all x profils to all x profils. Defaults to None.
+        type (str, optional): Type of data source, classic profils matrix ("matrix") or transition vectors matrix ("transition_vector"). Defaults to "matrix".
+        confidence (float, optional): PCS parameter, influence the positive weight of a double match. Defaults to 1.5.
+        penalty (float, optional): PCS parameter, influence the negative weight of a double missmatch. Defaults to 0.6.
+        truncation (float, optional): SVD-phy parameter, influence the data reduction. Defaults to 0.5.
+        consecutive (bool, optional): Cotransition score parameter, when consecuive=False: only counts one transition in 2 directly consecutive ones. Defaults to True.
+        tree (str, optional): Newick tree to order profils for PCS or Cotransition score. Defaults to None.
+        path (str, optional): Path to download distance dataframe. Defaults to None.
+
+    Returns:
+        pd.DataFrame: Returns a distance matrix in a dataframe
+
+    """
     if method not in ["Jaccard", 'jaccard', "Hamming", 'hamming', "Pearson", 'pearson', "MI", 'mi', "Cotransition", 'cotransition', "PCS", 'pcs', "SVD_phy", 'svd_phy']:
         raise ValueError("Method not accepted")
     if method in ["Cotransition", 'cotransition', "PCS", 'pcs'] and tree == None:
