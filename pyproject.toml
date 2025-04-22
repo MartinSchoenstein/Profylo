@@ -3,7 +3,7 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "PhyloDist"
+name = "profylo"
 authors = [
     {name = "Martin Schoenstein", email = "martin.schoenstein@etu.unistra.fr"},
     {name = "Pauline Mermillod", email = "pauline.mermillod@etu.unistra.fr"}
@@ -11,7 +11,7 @@ authors = [
 description = "Easy-to-use package for processing and comparing phylogenetic profiles, extracting functional modules and analyzing them" 
 readme = "README.rst"
 version = "1.0.0"
-requires-python = "<=3.12"
+requires-python = "<3.13"
 keywords = [
     "phylogenetic-profiles",
     "distance-metrics",
@@ -29,15 +29,15 @@ keywords = [
 license = {text = "LGPL-3.0"}
 
 dependencies = [
-    'biopython==1.84',
-    'numpy==2.1.3',
+    'biopython==1.85',
+    'numpy==2.2.5',
     'pandas==2.2.3',
-    'scikit-learn==1.5.2',
+    'scikit-learn==1.6.1',
     'scipy==1.15.2',
     'networkx==3.4.2',
-    'matplotlib==3.9.4',
+    'matplotlib==3.10.1',
     'seaborn==0.13.2',
-    'urllib3==2.2.3',
+    'urllib3==2.4.0',
     'goatools==1.4.12',
     'ete3==3.1.3',
     'markov-clustering==0.0.6.dev0'
