@@ -43,6 +43,9 @@ dependencies = [
     'markov-clustering==0.0.6.dev0'
 ]
 
+[project.scripts]
+profylo = "profylo.profylo:profylo_cli"
+
 
 [tool.ruff]
 lint.select = ["All"]
