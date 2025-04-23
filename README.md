@@ -22,7 +22,7 @@ pip install .
 
 Here are some examples of how to use Profylo, using some important functions. The data used and generated files are available on GitHub in /example.
 
-### Generating similarity scores (cotransition scores here) between all profiles in a matrix:
+#### Generating similarity scores (cotransition scores here) between all profiles in a matrix:
 ```python
 from profylo import Profylo as pro
 
@@ -31,7 +31,8 @@ pro.distance_profiles(x = "/exemple/profiles.csv",  tree = "/exemple/tree.nwk", 
 Other similarity or distance metrics are available, some with their own customization options, and some without requiring a phylogenetic tree.
 
 
-### Obtaining functional modules (using the connected components technique here):
+
+#### Obtaining functional modules (using the connected components technique here):
 ```python
 from profylo import post_processing as post 
 
@@ -40,7 +41,8 @@ post.graph_modules("exemple/cotransition_similarity.csv", distance = "cotransiti
 Other clustering methods, some graph-based and non-graph-based, are available.
 
 
-### Functional characterization of modules:
+
+#### Functional characterization of modules:
 ```python
 from profylo import post_processing as post 
 
@@ -48,7 +50,8 @@ post.go_enrichment("exemple/connected_components.txt", gaf = "exemple/gaf.gaf", 
 ```
 
 
-### Obtaining phylogenetic information relating to modules, the parsimony score is used as a score of atypicality of the modules:
+
+#### Obtaining phylogenetic information relating to modules, the parsimony score is used as a score of atypicality of the modules:
 ```python
 from profylo import post_processing as post 
 
