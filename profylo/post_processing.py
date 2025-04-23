@@ -1,4 +1,4 @@
-import phylodist.pre_processing as pp
+import profylo.pre_processing as pp
 import numpy as np
 import networkx as nx
 from Bio import Phylo
@@ -258,7 +258,7 @@ def label_propagation(
 
 def go_enrichment(
     x,                       
-    gene2go,                 
+    gaf,                 
     path = None,             
     complete_results = False 
 ):
@@ -277,7 +277,7 @@ def go_enrichment(
     if not os.path.exists("go.obo"):
         urllib.request.urlretrieve(go_obo_url, "go.obo")
     godag = GODag("go.obo")
-    gene2go = read_gaf("http://current.geneontology.org/annotations/goa_human.gaf.g", godag=godag, namespace=None)
+    gene2go = read_gaf(gaf, godag=godag, namespace=None)
     genes_fond = set(gene2go.keys())
     x = input_modules(x)
     df = pd.DataFrame(columns = ["length","GO/P-value(bh)_1", "GO/P-value(bh)_2", "GO/P-value(bh)_3", "GO/P-value(bh)_4", "GO/P-value(bh)_5"])
