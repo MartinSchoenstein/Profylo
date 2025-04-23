@@ -25,15 +25,12 @@ warnings.filterwarnings('ignore')
 
 def input_modules(x):
     if isinstance(x, list):
-        if isinstance(x[0], list):
-            return x
-        else:
-            return [x]
+        return x
     elif isinstance(x, str):
         with open(x, "r") as f:
             liste = []
             for l in f:
-                liste.append(f.strip().split(","))
+                liste.append(l.strip().split(","))
         return liste
     else:
         ("Only accepted types for x are: a path to a txt file or a list type variable")
@@ -396,27 +393,36 @@ def tree_annotation(
     x = input_module(x)
     liste_tree = []
     for gene in x:
+        unique = False
         t = Tree(path_tree, format = 8)
         for leaf in TreeNode.iter_leaves(t):
             leaf.add_feature("state", profils.loc[gene, leaf.name])
         AC = TreeNode.get_tree_root(t)
         state_on_nodes(AC)
-        higher_kids = 0
-        for node in t.traverse():
-            if node.state == 1:
-                count = 0
-                for child in node.children:
-                    if child.state == 1:
-                        count = count + 1
-                if count >= 2 :
-                    if len(node.get_leaves()) > higher_kids:
-                        higher_kids = len(node.get_leaves())
-                        oldest_node = node
-        all_kids = list(oldest_node.iter_descendants())
+        if sum(profils.loc[gene]) == 1:
+            unique = True
+            oldest_node = ""
+            all_kids = []
+        else:
+            higher_kids = 0
+            for node in t.traverse():
+                if node.state == 1:
+                    count = 0
+                    for child in node.children:
+                        if child.state == 1:
+                            count = count + 1
+                    if count >= 2 :
+                        if len(node.get_leaves()) > higher_kids:
+                            higher_kids = len(node.get_leaves())
+                            oldest_node = node
+            all_kids = list(oldest_node.iter_descendants())
         for node in t.traverse():
             if node != oldest_node:
                 if node.state == 1:
-                    if node not in all_kids:
+                    if unique is True:
+                        if not node.is_leaf():
+                            node.state = 0
+                    elif node not in all_kids:
                         node.state = 0
         liste_tree.append(t)
     t_mean = Tree(path_tree, format = 8)
@@ -442,9 +448,9 @@ def phylogenetic_statistics(
     """Function to compute statistics from a cluster by a phylogenetic tree
 
     Args:
-        x (list, str, Tree): List of list of genes or txt file with a line for each cluster, or annotated Tree.s
-        profils (str, pd.DataFrame, optional): Profile matrix. Defaults to None (Mandatory if x is not a Tree or a list of Tree).
-        path_tree (str, optional): Path to Newick tree to use. Defaults to None (Mandatory if x is not a Tree or a list of Tree).
+        x (list, str): List of list of genes or txt file with a line for each cluster, or list of annotated Trees
+        profils (str, pd.DataFrame, optional): Profile matrix. Defaults to None (Mandatory if x is not a list of Tree).
+        path_tree (str, optional): Path to Newick tree to use. Defaults to None (Mandatory if x is not a list of Tree).
         path (str, optional): Path to download output dataframe, must be a dir if dl_tree is True. Defaults to None.
         dl_tree (bool, optional): If dl_tree is true, return the mean tree used for each cluster. Defaults to False.
 
@@ -452,10 +458,7 @@ def phylogenetic_statistics(
         pd.DataFrame: Length, Parsimony, Number of Leaf with a presence, Last common ancestor
     """
     profils = pp.input(profils, test_binary = False)
-    if not isinstance(x, Tree):
-        x = input_modules(x)
-    else:
-        x = [x]
+    x = input_modules(x)
     df = pd.DataFrame(columns=["Cluster", "Length", "Parsimony", "Presence", "LCA"])
     for i, module in enumerate(x):
         if isinstance(module, list):
