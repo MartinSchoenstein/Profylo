@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>profylo.Profylo &mdash; Profylo v1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5cb08e4e"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Profylo
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../profylo.html">Profylo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pre_processing.html">profylo.pre_processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../post_processing.html">profylo.post_processing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Profylo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">profylo.Profylo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for profylo.Profylo</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">profylo.distances</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dst</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">profylo.pre_processing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">profylo.post_processing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">post</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="distance_profiles">
+<a class="viewcode-back" href="../../profylo.html#profylo.Profylo.distance_profiles">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">distance_profiles</span><span class="p">(</span>
+    <span class="n">method</span><span class="p">,</span>                 
+    <span class="n">x</span><span class="p">,</span>                      
+    <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>                 
+    <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;matrix&quot;</span><span class="p">,</span>        
+    <span class="n">confidence</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>         
+    <span class="n">penalty</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>            
+    <span class="n">truncation</span><span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>        
+    <span class="n">consecutive</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>     
+    <span class="n">tree</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>            
+    <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span>             
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main function of the library, allows access to 7 metrics for comparing phylogenetic profiles</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        method (str): Name of the distance method to use : &quot;Jaccard&quot;, &quot;Hamming&quot;, &quot;Pearson&quot;, &quot;MI&quot;, &quot;PCS&quot;, &quot;Cotransition&quot;, &quot;SVD_phy&quot;</span>
+<span class="sd">        x (str, pd.DataFrame): Data to use</span>
+<span class="sd">        y (str, pd.DataFrame, optional): Second date source if you want to compare the x profils to y profils and not all x profils to all x profils. Defaults to None.</span>
+<span class="sd">        type (str, optional): Type of data source, classic profils matrix (&quot;matrix&quot;) or transition vectors matrix (&quot;transition_vector&quot;). Defaults to &quot;matrix&quot;.</span>
+<span class="sd">        confidence (float, optional): PCS parameter, influence the positive weight of a double match. Defaults to 1.5.</span>
+<span class="sd">        penalty (float, optional): PCS parameter, influence the negative weight of a double missmatch. Defaults to 0.6.</span>
+<span class="sd">        truncation (float, optional): SVD-phy parameter, influence the data reduction. Defaults to 0.5.</span>
+<span class="sd">        consecutive (bool, optional): Cotransition score parameter, when consecuive=False: only counts one transition in 2 directly consecutive ones. Defaults to True.</span>
+<span class="sd">        tree (str, optional): Newick tree to order profils for PCS or Cotransition score. Defaults to None.</span>
+<span class="sd">        path (str, optional): Path to download distance dataframe. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: Returns a distance matrix in a dataframe</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Jaccard&quot;</span><span class="p">,</span> <span class="s1">&#39;jaccard&#39;</span><span class="p">,</span> <span class="s2">&quot;Hamming&quot;</span><span class="p">,</span> <span class="s1">&#39;hamming&#39;</span><span class="p">,</span> <span class="s2">&quot;Pearson&quot;</span><span class="p">,</span> <span class="s1">&#39;pearson&#39;</span><span class="p">,</span> <span class="s2">&quot;MI&quot;</span><span class="p">,</span> <span class="s1">&#39;mi&#39;</span><span class="p">,</span> <span class="s2">&quot;Cotransition&quot;</span><span class="p">,</span> <span class="s1">&#39;cotransition&#39;</span><span class="p">,</span> <span class="s2">&quot;PCS&quot;</span><span class="p">,</span> <span class="s1">&#39;pcs&#39;</span><span class="p">,</span> <span class="s2">&quot;SVD_phy&quot;</span><span class="p">,</span> <span class="s1">&#39;svd_phy&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Method not accepted&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Cotransition&quot;</span><span class="p">,</span> <span class="s1">&#39;cotransition&#39;</span><span class="p">,</span> <span class="s2">&quot;PCS&quot;</span><span class="p">,</span> <span class="s1">&#39;pcs&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">tree</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Transition_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;Transition vector&quot;</span><span class="p">,</span> <span class="s2">&quot;transition_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;transition vector&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tree needed for this method&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;matrix&quot;</span><span class="p">,</span> <span class="s2">&quot;Matrix&quot;</span><span class="p">,</span> <span class="s2">&quot;Transition_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;Transition vector&quot;</span><span class="p">,</span> <span class="s2">&quot;transition_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;transition vector&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;type must be matrix or transition_vector&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;SVD_phy&quot;</span><span class="p">,</span> <span class="s1">&#39;svd_phy&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;SVD_phy only accepts 1 matrix&quot;</span><span class="p">)</span>
+    <span class="n">dfx</span><span class="p">,</span> <span class="n">binary_x</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">_input</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dfy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dfx</span><span class="p">),</span> <span class="s2">&quot; profiles loaded into &quot;</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="s2">&quot; distance.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dfy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">_input</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">test_binary</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dfx</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">dfy</span><span class="p">),</span> <span class="s2">&quot; profiles loaded into &quot;</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="s2">&quot; distance.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Jaccard&quot;</span><span class="p">,</span> <span class="s1">&#39;jaccard&#39;</span><span class="p">,</span> <span class="s2">&quot;Hamming&quot;</span><span class="p">,</span> <span class="s1">&#39;hamming&#39;</span><span class="p">,</span> <span class="s2">&quot;Cotransition&quot;</span><span class="p">,</span> <span class="s1">&#39;cotransition&#39;</span><span class="p">,</span> <span class="s2">&quot;PCS&quot;</span><span class="p">,</span> <span class="s1">&#39;pcs&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">binary_x</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">dfx</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">to_binary</span><span class="p">(</span><span class="n">dfx</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dfy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dfy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">to_binary</span><span class="p">(</span><span class="n">dfy</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Profiles were not binary, to_binary() was applied with 0.5 for threshold&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running...&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Jaccard&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;jaccard&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">jaccard</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">dfy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Hamming&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;hamming&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">hamming</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">dfy</span><span class="p">)</span> 
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Pearson&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;pearson&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">pearson</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">dfy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;MI&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;mi&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">mi</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">dfy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cotransition&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Cotransition&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;matrix&quot;</span><span class="p">:</span>
+            <span class="n">ordered_dfx</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">order_by_tree</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+            <span class="n">tvx</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">transition_vector</span><span class="p">(</span><span class="n">ordered_dfx</span><span class="p">,</span> <span class="n">from_outside</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dfy</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+                <span class="n">ordered_dfy</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">tvy</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="n">ordered_dfy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">order_by_tree</span><span class="p">(</span><span class="n">dfy</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+                <span class="n">tvy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">transition_vector</span><span class="p">(</span><span class="n">ordered_dfy</span><span class="p">,</span> <span class="n">from_outside</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tvx</span> <span class="o">=</span> <span class="n">dfx</span>
+            <span class="n">tvy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">p_value</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">cotransition</span><span class="p">(</span><span class="n">tvx</span><span class="p">,</span> <span class="n">tvy</span><span class="p">,</span> <span class="n">consecutive</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;pcs&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;PCS&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;matrix&quot;</span><span class="p">:</span>
+            <span class="n">ordered_dfx</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">order_by_tree</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+            <span class="n">tvx</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">transition_vector</span><span class="p">(</span><span class="n">ordered_dfx</span><span class="p">,</span> <span class="n">from_outside</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dfy</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+                <span class="n">ordered_dfy</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">tvy</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="n">ordered_dfy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">order_by_tree</span><span class="p">(</span><span class="n">dfy</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+                <span class="n">tvy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">transition_vector</span><span class="p">(</span><span class="n">ordered_dfy</span><span class="p">,</span> <span class="n">from_outside</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tvx</span> <span class="o">=</span> <span class="n">dfx</span>
+            <span class="n">tvy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">pcs</span><span class="p">(</span><span class="n">tvx</span><span class="p">,</span> <span class="n">tvy</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">penalty</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;svd_phy&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;SVD_phy&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">SVD_phy</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">truncation</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cotransition&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Cotransition&quot;</span><span class="p">:</span>
+            <span class="n">p_value</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_modules</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">clustering</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">criterion</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">distance</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">clustering</span> <span class="o">==</span> <span class="s2">&quot;label_propagation&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Distance metric used is requested&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Treshold to build edges is requested&quot;</span><span class="p">)</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">label_propagation</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">clustering</span> <span class="o">==</span> <span class="s2">&quot;markov_clustering&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Distance metric used is requested&quot;</span><span class="p">)</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">markov_clustering</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">clustering</span> <span class="o">==</span> <span class="s2">&quot;connected_components&quot;</span> <span class="ow">or</span> <span class="n">clustering</span> <span class="o">==</span> <span class="s2">&quot;graph_modules&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Distance metric used is requested&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Threshold to build edges is requested&quot;</span><span class="p">)</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">graph_modules</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">clustering</span> <span class="o">==</span> <span class="s2">&quot;hierarchical_clustering&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Method to use for clustering is requested&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">criterion</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Criterion to cut clusters is requested&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Threshold to cut clusters is requested&quot;</span><span class="p">)</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">hierarchical_clustering</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_phylogenetic_statistics</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">profils</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path_tree</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dl_tree</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">phylogenetic_statistics</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">profils</span><span class="p">,</span> <span class="n">path_tree</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">dl_tree</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Martin Schoenstein, Pauline Mermillod.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
