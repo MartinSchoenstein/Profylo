@@ -74,7 +74,7 @@ post.tree_annotation(['P22102', 'P31939', 'Q06203', 'O15067'], "exemple/profiles
 ```python
 from profylo import post_processing as post 
 
-post.go_enrichment("exemple/connected_components.txt", gaf = "exemple/gaf.gaf", complete_results = True, path = "GO_enrichment")
+post.go_enrichment("exemple/connected_components.txt", gaf = "exemple/gaf.gaf", path = "GO_enrichment.csv")
 ```
   
 
@@ -83,7 +83,7 @@ post.go_enrichment("exemple/connected_components.txt", gaf = "exemple/gaf.gaf", 
 ```python
 from profylo import post_processing as post 
 
-post.phylogenetic_statistics("exemple/connected_components.txt", profils = "exemple/profiles.csv", path_tree = "exemple/tree.nwk", path = "exemple/phylogenetic_statitstics.csv")
+post.phylogenetic_statistics("exemple/connected_components.txt", profils = "exemple/profiles.csv", path_tree = "exemple/tree.nwk", path = "exemple/phylogenetic_statistics.csv")
 ```
 
 ---
