@@ -54,14 +54,14 @@ Other clustering methods, some graph-based and non-graph-based, are available.
 
 #### 3) Visualiation of a module:
 
-Heatmaps (It would have been possible to highlight certain clades with the *clades* argument of the function):
+- Heatmaps (It would have been possible to highlight certain clades with the *clades* argument of the function):
 ```python
 from profylo import post_processing as post 
 
 post.profils_heatmap("exemple/profiles.csv", ['P22102', 'P31939', 'Q06203', 'O15067'], tree = "exemple/tree.nwk", path = "exemple/heatmaps_cluster5.png")
 ```
 
-Annotated tree (to be viewed in external software):
+- Annotated tree (to be viewed in external software):
 ```python
 from profylo import post_processing as post 
 
