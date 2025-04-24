@@ -32,7 +32,7 @@ from profylo import pre_processing as pre
 ```
   
 
-#### Generating similarity scores (cotransition scores here) between all profiles in a matrix:
+#### 1) Generating similarity scores (cotransition scores here) between all profiles in a matrix:
 
 ```python
 from profylo import Profylo as pro
@@ -42,7 +42,7 @@ pro.distance_profiles(x = "/exemple/profiles.csv",  tree = "/exemple/tree.nwk", 
 Other similarity or distance metrics are available, some with their own customization options, and some without requiring a phylogenetic tree.
   
 
-#### Obtaining functional modules (using the connected components technique here):
+#### 2) Obtaining functional modules (using the connected components technique here):
 
 ```python
 from profylo import post_processing as post 
@@ -52,7 +52,7 @@ post.graph_modules("exemple/cotransition_similarity.csv", distance = "cotransiti
 Other clustering methods, some graph-based and non-graph-based, are available.
   
 
-#### Visualiation of a module:
+#### 3) Visualiation of a module:
 
 Heatmaps (It would have been possible to highlight certain clades with the *clades* argument of the function):
 ```python
@@ -69,7 +69,7 @@ post.tree_annotation(['P22102', 'P31939', 'Q06203', 'O15067'], "exemple/profiles
 ```
   
 
-#### Functional characterization of modules:
+#### 4) Functional characterization of modules:
 
 ```python
 from profylo import post_processing as post 
@@ -78,7 +78,7 @@ post.go_enrichment("exemple/connected_components.txt", gaf = "exemple/gaf.gaf", 
 ```
   
 
-#### Obtaining phylogenetic information relating to modules, the parsimony score is used as a score of atypicality of the modules:
+#### 5) Obtaining phylogenetic information relating to modules, the parsimony score is used as a score of atypicality of the modules:
 
 ```python
 from profylo import post_processing as post 
