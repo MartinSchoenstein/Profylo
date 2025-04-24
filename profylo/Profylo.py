@@ -1,5 +1,6 @@
 import profylo.distances as dst
 import profylo.pre_processing as pp
+import profylo.post_processing as post
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -100,3 +101,31 @@ def distance_profiles(
         result.to_csv(path, index=True),
     print("Done.")
     return result
+
+
+
+def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
+    if clustering == "label_propagation":
+        if distance is None:
+            raise ValueError("Distance metric used is requested")
+        if threshold is None :
+            raise ValueError("Treshold to build edges is requested")
+        post.label_propagation(x, distance, threshold, seed, path)
+    if clustering == "markov_clustering":
+        if distance is None :
+            raise ValueError("Distance metric used is requested")
+        post.markov_clustering(x, distance, path)
+    if clustering == "connected_components" or clustering == "graph_modules":
+        if distance is None :
+            raise ValueError("Distance metric used is requested")
+        if threshold is None :
+            raise ValueError("Threshold to build edges is requested")
+        post.graph_modules(x, distance, threshold, path)
+    if clustering == "hierarchical_clustering":
+        if method is None :
+            raise ValueError("Method to use for clustering is requested")
+        if criterion is None :
+            raise ValueError("Criterion to cut clusters is requested")
+        if threshold is None :
+            raise ValueError("Threshold to cut clusters is requested")
+        post.hierarchical_clustering(x, method, criterion, threshold, path)
