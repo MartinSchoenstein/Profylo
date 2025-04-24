@@ -129,3 +129,8 @@ def make_modules(x, clustering, method = None, criterion = None, threshold = Non
         if threshold is None :
             raise ValueError("Threshold to cut clusters is requested")
         post.hierarchical_clustering(x, method, criterion, threshold, path)
+
+
+
+def phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
+    post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
