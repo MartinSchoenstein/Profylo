@@ -86,7 +86,7 @@ from profylo import post_processing as post
 post.phylogenetic_statistics("exemple/connected_components.txt", profils = "exemple/profiles.csv", path_tree = "exemple/tree.nwk", path = "exemple/phylogenetic_statitstics.csv")
 ```
 
--
+---
 
 ## Crédits
 Martin Schoenstein  
@@ -101,3 +101,8 @@ April 2025
 
 
 
+---
+
+***
+
+___
