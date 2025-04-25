@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>profylo.post_processing &mdash; Profylo v1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5cb08e4e"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="profylo.pre_processing" href="pre_processing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Profylo
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="profylo.html">Profylo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pre_processing.html">profylo.pre_processing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">profylo.post_processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.go_enrichment"><code class="docutils literal notranslate"><span class="pre">go_enrichment()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.graph_modules"><code class="docutils literal notranslate"><span class="pre">graph_modules()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.hierarchical_clustering"><code class="docutils literal notranslate"><span class="pre">hierarchical_clustering()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.hierarchical_dendrogram"><code class="docutils literal notranslate"><span class="pre">hierarchical_dendrogram()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.label_propagation"><code class="docutils literal notranslate"><span class="pre">label_propagation()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.markov_clustering"><code class="docutils literal notranslate"><span class="pre">markov_clustering()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.phylogenetic_statistics"><code class="docutils literal notranslate"><span class="pre">phylogenetic_statistics()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.profils_heatmap"><code class="docutils literal notranslate"><span class="pre">profils_heatmap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#profylo.post_processing.tree_annotation"><code class="docutils literal notranslate"><span class="pre">tree_annotation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Profylo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">profylo.post_processing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/post_processing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="profylo-post-processing">
+<h1>profylo.post_processing<a class="headerlink" href="#profylo-post-processing" title="Link to this heading"></a></h1>
+<dl class="py function" id="module-profylo.post_processing">
+<dt class="sig sig-object py" id="profylo.post_processing.go_enrichment">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">go_enrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#go_enrichment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.go_enrichment" title="Link to this definition"></a></dt>
+<dd><p>Function to process GO enrichment test on a list of genes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>str</em><em>, </em><em>list</em>) – List of list of genes (UNIPROT ID) or txt file with a line for each cluster</p></li>
+<li><p><strong>gene2go</strong> (<em>str</em>) – Link to a gene2go file like “<a class="reference external" href="http://current.geneontology.org/annotations/goa_human.gaf.gz">http://current.geneontology.org/annotations/goa_human.gaf.gz</a>”</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to a dir to download full enrichment results. Defaults to None.</p></li>
+<li><p><strong>complete_results</strong> (<em>bool</em><em>, </em><em>optional</em>) – If =True, download full set of results files comming from goatools. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Return resume results for each module</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.graph_modules">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">graph_modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#graph_modules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.graph_modules" title="Link to this definition"></a></dt>
+<dd><p>Function to represent distances between profiles in a graph and extract connected components as modules</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em>) – Distance matrix</p></li>
+<li><p><strong>distance</strong> (<em>str</em>) – Metric used to obtain distances</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – Trust threshold for creating edges</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download the modules. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a list containing the list of genes in each modules</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.hierarchical_clustering">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">hierarchical_clustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#hierarchical_clustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.hierarchical_clustering" title="Link to this definition"></a></dt>
+<dd><p>Function for performing hierarchical clustering on distances between profiles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em>) – Distance matrix</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Method to use for hierarchical clustering : “ward”, “average”, “weighted”, “complete”</p></li>
+<li><p><strong>criterion</strong> (<em>str</em>) – The way to cut the clusters, by “distance” between clusters or by the “number” of clusters</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – Threshold to use for cutting clusters</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download the clusters. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a list containing the list of genes in each clusters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.hierarchical_dendrogram">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">hierarchical_dendrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#hierarchical_dendrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.hierarchical_dendrogram" title="Link to this definition"></a></dt>
+<dd><p>Function to obtain the dendrogram linked to hierarchical clustering from distances between profiles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em>) – Distance matrix</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Method to use for hierarchical clustering : “ward”, “average”, “weighted”, “complete”</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download the dendrogram plot. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.label_propagation">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">label_propagation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#label_propagation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.label_propagation" title="Link to this definition"></a></dt>
+<dd><p>Function to represent distances between profiles in a graph and performe label propagation clustering</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em>) – Distance matrix</p></li>
+<li><p><strong>distance</strong> (<em>str</em>) – Metric used to obtain distances</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – Trust treshold to use for creating edges</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Seeding for the random part of the label propagation algorithm. Defaults to None.</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download the modules. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a list containing the list of genes in each modules</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.markov_clustering">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">markov_clustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#markov_clustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.markov_clustering" title="Link to this definition"></a></dt>
+<dd><p>Function to represent distances between profiles in a graph and performe markov clustering</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em>) – Distance matrix</p></li>
+<li><p><strong>distance</strong> (<em>str</em>) – Metric used to obtain distances</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download the modules. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a list containing the list of genes in each modules</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.phylogenetic_statistics">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">phylogenetic_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profils</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dl_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#phylogenetic_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.phylogenetic_statistics" title="Link to this definition"></a></dt>
+<dd><p>Function to compute statistics from a cluster by a phylogenetic tree</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>list</em><em>, </em><em>str</em>) – List of list of genes or txt file with a line for each cluster, or list of annotated Trees</p></li>
+<li><p><strong>profils</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em><em>, </em><em>optional</em>) – Profile matrix. Defaults to None (Mandatory if x is not a list of Tree).</p></li>
+<li><p><strong>path_tree</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to Newick tree to use. Defaults to None (Mandatory if x is not a list of Tree).</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download output dataframe, must be a dir if dl_tree is True. Defaults to None.</p></li>
+<li><p><strong>dl_tree</strong> (<em>bool</em><em>, </em><em>optional</em>) – If dl_tree is true, return the mean tree used for each cluster. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length, Parsimony, Number of Leaf with a presence, Last common ancestor</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.profils_heatmap">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">profils_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clades</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ordered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#profils_heatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.profils_heatmap" title="Link to this definition"></a></dt>
+<dd><p>Function to represent profiles (presence/absence) on a heatmap</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em>) – Profile matrix</p></li>
+<li><p><strong>selection</strong> (<em>list</em><em>, </em><em>optional</em>) – Genes selection to represent. Defaults to None.</p></li>
+<li><p><strong>tree</strong> (<em>str</em><em>, </em><em>optional</em>) – Newick tree to order profils, not necessary if ordered = True. Defaults to None.</p></li>
+<li><p><strong>clades</strong> (<em>list</em><em>, </em><em>optional</em>) – Clades to highlight on heatmaps. Defaults to None.</p></li>
+<li><p><strong>ordered</strong> (<em>bool</em><em>, </em><em>optional</em>) – True if profils are already ordered else need a Newick tree. Defaults to False.</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download the heatmap. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profylo.post_processing.tree_annotation">
+<span class="sig-prename descclassname"><span class="pre">profylo.post_processing.</span></span><span class="sig-name descname"><span class="pre">tree_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profils</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profylo/post_processing.html#tree_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#profylo.post_processing.tree_annotation" title="Link to this definition"></a></dt>
+<dd><p>Function to reconstruct the evolutionary history of genes on a tree from profiles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>list</em>) – List of genes or txt file with all genes in one line</p></li>
+<li><p><strong>profils</strong> (<em>str</em><em>, </em><em>pd.DataFrame</em>) – profile matrix</p></li>
+<li><p><strong>path_tree</strong> (<em>str</em>) – Path to Newick tree to use</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to download the tree. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Annotated tree with “state” on nodes representing mean presence/absence in the cluster</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tree</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pre_processing.html" class="btn btn-neutral float-left" title="profylo.pre_processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Martin Schoenstein, Pauline Mermillod.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
