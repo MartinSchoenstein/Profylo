@@ -2,7 +2,7 @@
 
 Profylo: an accessible phylogenetic profiling analysis python package : similarity metrics, clustering methods and modules exploration and visualisation
 
-
+---
 
 ## Installation
 
@@ -30,7 +30,8 @@ Profile processing and modification functions, some used automatically by the li
 ```python
 from profylo import pre_processing as pre
 ```
-  
+
+**All functions available in the library and their different options are described in the documentation: https://martinschoenstein.github.io/Profylo/**
 
 #### 1) Generating similarity scores (cotransition scores here) between all profiles in a matrix:
 
