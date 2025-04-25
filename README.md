@@ -2,6 +2,7 @@
 
 Profylo: an accessible phylogenetic profiling analysis python package : similarity metrics, clustering methods and modules exploration and visualisation
 
+**Documentation: https://martinschoenstein.github.io/Profylo/**
 ---
 
 ## Installation
