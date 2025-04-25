@@ -23,7 +23,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def input_modules(x):
+def _input_modules(x):
     if isinstance(x, list):
         return x
     elif isinstance(x, str):
@@ -35,7 +35,7 @@ def input_modules(x):
     else:
         ("Only accepted types for x are: a path to a txt file or a list type variable")
 
-def input_module(x):
+def _input_module(x):
     if isinstance(x, list):
         return x
     elif isinstance(x, str):
@@ -58,7 +58,7 @@ def hierarchical_dendrogram(
         method (str): Method to use for hierarchical clustering : "ward", "average", "weighted", "complete"
         path (str, optional): Path to download the dendrogram plot. Defaults to None.
     """
-    dfx = pp.input(x, test_binary = False)
+    dfx = pp._input(x, test_binary = False)
     dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
     dfx[dfx < 0] = 0
     dfx = 1 - dfx
@@ -91,7 +91,7 @@ def hierarchical_clustering(
     Returns:
         list: Returns a list containing the list of genes in each clusters
     """
-    dfx =  pp.input(x, test_binary = False)
+    dfx =  pp._input(x, test_binary = False)
     dfx = dfx.apply(pd.to_numeric, errors="coerce").fillna(0)
     dfx = squareform(dfx)
     L = linkage(x, method)
@@ -128,7 +128,7 @@ def graph_modules(
     Returns:
         list: Returns a list containing the list of genes in each modules
     """
-    dfx = pp.input(x, test_binary = False)
+    dfx = pp._input(x, test_binary = False)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
@@ -171,7 +171,7 @@ def markov_clustering(
     Returns:
         list: Returns a list containing the list of genes in each modules
     """
-    dfx = pp.input(x, test_binary = False)
+    dfx = pp._input(x, test_binary = False)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         dfx[dfx < 0] = 0
@@ -224,7 +224,7 @@ def label_propagation(
     Returns:
         list: Returns a list containing the list of genes in each modules
     """
-    dfx = pp.input(x, test_binary = False)
+    dfx = pp._input(x, test_binary = False)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
@@ -276,7 +276,7 @@ def go_enrichment(
     godag = GODag("go.obo")
     gene2go = read_gaf(gaf, godag=godag, namespace=None)
     genes_fond = set(gene2go.keys())
-    x = input_modules(x)
+    x = _input_modules(x)
     df = pd.DataFrame(columns = ["length","GO/P-value(bh)_1", "GO/P-value(bh)_2", "GO/P-value(bh)_3", "GO/P-value(bh)_4", "GO/P-value(bh)_5"])
     for i, module in enumerate(x):
         goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
@@ -290,9 +290,11 @@ def go_enrichment(
         if complete_results is True:
             path2 = path + "/" + str(i) + ".tsv"
             goeaobj.wr_tsv(path2, results)
-    if path is not None:
-        path1 = path + "resume_results.csv"
+    if path is not None and complete_results is True:
+        path1 = path + "/resume_results.csv"
         df.to_csv(path1, index = False)
+    if path is not None and complete_results is False:
+        df.to_csv(path, index = False)
     return df
 
 
@@ -318,7 +320,7 @@ def profils_heatmap(
         raise ValueError("Need a tree to order profiles")
     if clades is not None and tree == None:
         raise ValueError("Need tree to obtain phylogenetic informations")
-    profils = pp.input(x, test_binary = False)
+    profils = pp._input(x, test_binary = False)
     if ordered == False :
         profils = pp.order_by_tree(profils, tree)
     if selection is None:
@@ -357,12 +359,12 @@ def profils_heatmap(
     plt.show()
 
 
-def state_on_nodes(x):
+def _state_on_nodes(x):
     if hasattr(x, "state"):
         return(x.state)
     count = 0
     for child in x.children:
-        state = state_on_nodes(child)
+        state = _state_on_nodes(child)
         if state == 1:
             count = count + 1
     if count > 0:
@@ -389,8 +391,8 @@ def tree_annotation(
     Returns:
         Tree: Annotated tree with "state" on nodes representing mean presence/absence in the cluster
     """
-    profils = pp.input(profils, test_binary = False)
-    x = input_module(x)
+    profils = pp._input(profils, test_binary = False)
+    x = _input_module(x)
     liste_tree = []
     for gene in x:
         unique = False
@@ -398,7 +400,7 @@ def tree_annotation(
         for leaf in TreeNode.iter_leaves(t):
             leaf.add_feature("state", profils.loc[gene, leaf.name])
         AC = TreeNode.get_tree_root(t)
-        state_on_nodes(AC)
+        _state_on_nodes(AC)
         if sum(profils.loc[gene]) == 1:
             unique = True
             oldest_node = ""
@@ -457,8 +459,8 @@ def phylogenetic_statistics(
     Returns:
         pd.DataFrame: Length, Parsimony, Number of Leaf with a presence, Last common ancestor
     """
-    profils = pp.input(profils, test_binary = False)
-    x = input_modules(x)
+    profils = pp._input(profils, test_binary = False)
+    x = _input_modules(x)
     df = pd.DataFrame(columns=["Cluster", "Length", "Parsimony", "Presence", "LCA"])
     for i, module in enumerate(x):
         if isinstance(module, list):
