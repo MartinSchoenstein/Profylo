@@ -329,12 +329,14 @@ def profils_heatmap(
         profils_selection = profils.loc[selection]
     profils_selection = profils_selection.fillna(0)
     profils_selection = profils_selection.apply(pd.to_numeric)
-    tree = Phylo.read(tree, "newick")
+    tree = Tree(tree, format = 8)
     if clades is not None:
         new_col = []
         for c in profils_selection.columns:
             add = False
-            phylogenie = [clade.name for clade in tree.get_path(c) if clade.name]
+            leaf_node = tree&c 
+            ancestor = leaf_node.get_ancestors()
+            phylogenie = [n.name for n in ancestor if n.name]
             for clade in phylogenie:
                 if str(clade) in clades:
                     if add == False:
