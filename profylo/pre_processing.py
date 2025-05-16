@@ -6,12 +6,12 @@ warnings.filterwarnings('ignore')
 
 
 
-def is_binary(df):
+def _is_binary(df):
     binary = df.map(lambda x: x in [-1, 0, 1]).all().all()
     return binary
 
 
-def input(x, test_binary = True):
+def _input(x, test_binary = True):
     if isinstance(x, str) :
         dfx = pd.read_csv(x, sep=",", index_col=0)
     elif isinstance(x, pd.DataFrame):
@@ -19,7 +19,7 @@ def input(x, test_binary = True):
     else:
         raise ValueError("Only accepted types for x are: a path to a csv file or a pandas dataframe")
     if test_binary == True:
-        binary = is_binary(dfx)
+        binary = _is_binary(dfx)
         return dfx, binary
     else:
         return dfx
@@ -53,7 +53,7 @@ def normalize(
     Returns:
         pd.DataFrame: Returns normalized continuous profiles matrix
     """
-    dfx = input(x, test_binary = False)
+    dfx = _input(x, test_binary = False)
     for i in dfx.index:
         dfx.loc[i] = dfx.loc[i]/max(dfx.loc[i])
     return dfx
@@ -110,7 +110,7 @@ def order_by_tree(
     """
     if tree is None:
         raise TypeError("A newick file is missing")
-    dfx = input(x, test_binary = False)
+    dfx = _input(x, test_binary = False)
     phylo = Phylo.read(tree, "newick")
     leaf = phylo.get_terminals()
     ordered_df = pd.DataFrame()

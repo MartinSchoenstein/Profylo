@@ -47,12 +47,12 @@ def distance_profiles(
         raise ValueError("type must be matrix or transition_vector")
     if method in ["SVD_phy", 'svd_phy'] and y != None:
         raise ValueError("SVD_phy only accepts 1 matrix")
-    dfx, binary_x = pp.input(x)
+    dfx, binary_x = pp._input(x)
     if y is None:
         dfy = None
         print(len(dfx), " profiles loaded into ", method, " distance.")
     else:
-        dfy = pp.input(y, test_binary = False)
+        dfy = pp._input(y, test_binary = False)
         print(len(dfx) + len(dfy), " profiles loaded into ", method, " distance.")
     if method in ["Jaccard", 'jaccard', "Hamming", 'hamming', "Cotransition", 'cotransition', "PCS", 'pcs'] and binary_x == False:
         dfx = pp.to_binary(dfx)
@@ -148,7 +148,7 @@ def parse_args():
     distance_parser.add_argument('-c', '--confidence', type=float, default=1.5, help='Optionnal - PCS parameter: confidence')
     distance_parser.add_argument('-p', '--penalty', type=float, default=0.6, help='Optionnal - PCS parameter: penalty')
     distance_parser.add_argument('-tr', '--truncation', type=float, default=0.5, help='Optionnal - SVD_phy parameter: truncation')  
-    distance_parser.add_argument('-co', '--consecutive', type=bool, default=True, help='Optionnal -Cotransition parameter: consecutive')
+    distance_parser.add_argument('-co', '--consecutive',  action="store_true", help='Optionnal -Cotransition parameter: consecutive')
     distance_parser.add_argument('-tree', '--tree', type=str, help='Required for cotransition and PCS - Path to the newick tree file')
 
     modules_parser = subparsers.add_parser('make_modules', help='Make modules from a distance matrix')
@@ -156,16 +156,16 @@ def parse_args():
     modules_parser.add_argument('-cl', '--clustering', type=str, required=True, choices=["label_propagation", "markov_clustering", "connected_components", "graph_modules", "hierarchical_clustering"], help='Clustering method to use: label_propagation, markov_clustering, connected_components, graph_modules, hierarchical_clustering')
     modules_parser.add_argument('-o', '--output', type=str, required=True, help='Path to save the output modules')
     modules_parser.add_argument('-d', '--distance', type=str, required=True, help='Distance metric used for build the distance matrix.')
-    modules_parser.add_argument('-m', '--method', type=str, help='Only if method is hierarchical_clustering. Method to use for hierarchical clustering: single, complete, average, weighted, centroid, median, ward')
+    modules_parser.add_argument('-m', '--method', type=str, default="ward", help='Only if method is hierarchical_clustering. Method to use for hierarchical clustering: single, complete, average, weighted, centroid, median, ward (default)')
     modules_parser.add_argument('-cr', '--criterion', type=str, help='Only if method is hierarchical_clustering. Criterion to use for hierarchical clustering: distance, maxclust')
     modules_parser.add_argument('-th', '--threshold', type=float, help='Threshold to use for graph construction - distance above the treshold or similarity below the treshold will not be included as edge.')
     modules_parser.add_argument('-s', '--seed', type=int, help='Label propagation only. Seed to use for label propagation.')
     modules_parser = subparsers.add_parser('phylogenetic_statistics', help='Compute phylogenetic statistics')
     modules_parser.add_argument('-m', '--modules', type=str, required=True, help='Text file of list of genes, with a line for each cluster')
-    modules_parser.add_argument('-p', '--profil', type=str, help='Path to the profile matrix')
-    modules_parser.add_argument('-tree', '--path_tree', type=str, help='Path to the newick tree file')
-    modules_parser.add_argument('-o', '--output', type=str, help='Path to save the output phylogenetic statistics')
-    modules_parser.add_argument('-dl', '--dl_tree', type=bool, default=False, help='Use if this function should output an annotated by module')
+    modules_parser.add_argument('-p', '--profil', type=str, required=True, help='Path to the profile matrix')
+    modules_parser.add_argument('-tree', '--path_tree', required=True, type=str, help='Path to the newick tree file')
+    modules_parser.add_argument('-o', '--output', required=True, type=str, help='Path to save the output phylogenetic statistics')
+    modules_parser.add_argument('-dl', '--dl_tree',   action="store_true", help='Use if this function should output an annotated by module')
 
     args = parser.parse_args()
     return args
