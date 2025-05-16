@@ -105,13 +105,7 @@ def distance_profiles(
     print("Done.")
     return result
 
-<<<<<<< HEAD:profylo/profylo.py
 def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
-=======
-
-
-def _make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
->>>>>>> main:profylo/Profylo.py
     if clustering == "label_propagation":
         if distance is None:
             raise ValueError("Distance metric used is requested")
@@ -139,7 +133,6 @@ def _make_modules(x, clustering, method = None, criterion = None, threshold = No
 
 
 
-<<<<<<< HEAD:profylo/profylo.py
 def phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
     post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
 
@@ -209,7 +202,5 @@ def profylo_cli():
             path_tree=args.path_tree,
             path=args.output,
             dl_tree=args.dl_tree)   
-=======
 def _phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
     post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
->>>>>>> main:profylo/Profylo.py
