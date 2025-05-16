@@ -44,12 +44,12 @@ def distance_profiles(
         raise ValueError("type must be matrix or transition_vector")
     if method in ["SVD_phy", 'svd_phy'] and y != None:
         raise ValueError("SVD_phy only accepts 1 matrix")
-    dfx, binary_x = pp.input(x)
+    dfx, binary_x = pp._input(x)
     if y is None:
         dfy = None
         print(len(dfx), " profiles loaded into ", method, " distance.")
     else:
-        dfy = pp.input(y, test_binary = False)
+        dfy = pp._input(y, test_binary = False)
         print(len(dfx) + len(dfy), " profiles loaded into ", method, " distance.")
     if method in ["Jaccard", 'jaccard', "Hamming", 'hamming', "Cotransition", 'cotransition', "PCS", 'pcs'] and binary_x == False:
         dfx = pp.to_binary(dfx)
@@ -104,7 +104,7 @@ def distance_profiles(
 
 
 
-def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
+def _make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
     if clustering == "label_propagation":
         if distance is None:
             raise ValueError("Distance metric used is requested")
@@ -132,5 +132,5 @@ def make_modules(x, clustering, method = None, criterion = None, threshold = Non
 
 
 
-def phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
+def _phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
     post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
