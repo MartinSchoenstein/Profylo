@@ -5,6 +5,7 @@ import profylo.post_processing as post
 ========
 >>>>>>>> 5a710d5 (Added the command line interface of profylo):profylo/profylo.py
 import warnings
+import argparse
 warnings.filterwarnings('ignore')
 
 import argparse
@@ -108,7 +109,12 @@ def distance_profiles(
     return result
 
 
+<<<<<<< HEAD
 <<<<<<<< HEAD:profylo/Profylo.py
+=======
+<<<<<<< Updated upstream:profylo/profylo.py
+=======
+>>>>>>> bf46ab2 (Adding more option to the command line)
 
 def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
     if clustering == "label_propagation":
@@ -140,10 +146,16 @@ def make_modules(x, clustering, method = None, criterion = None, threshold = Non
 
 def phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
     post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
+<<<<<<< HEAD
 ========
+=======
+
+
+>>>>>>> Stashed changes:profylo/Profylo.py
+>>>>>>> bf46ab2 (Adding more option to the command line)
 def parse_args():
     parser = argparse.ArgumentParser(description='Profylo: Phylogenetic profile distance manipulaion')
-    subparsers = parser.add_subparsers(dest='Profylo mode', required=True, help='Mode selection')
+    subparsers = parser.add_subparsers(dest='mode', required=True, help='Mode selection')
     distance_parser = subparsers.add_parser('distance_compute', help='Compute distance between profiles')
     distance_parser.add_argument('-m', '--method', type=str, required=True, choices= ["Jaccard", 'jaccard', "Hamming", 'hamming', "Pearson", 'pearson', "MI", 'mi', "Cotransition", 'cotransition', "PCS", 'pcs', "SVD_phy", 'svd_phy'], help='Distance method to use: Jaccard, Hamming, Pearson, MI, PCS, Cotransition, SVD_phy')
     distance_parser.add_argument('-x', '--matrix', type=str, required=True, help='Path to the first profile matrix')
@@ -156,13 +168,29 @@ def parse_args():
     distance_parser.add_argument('-co', '--consecutive', type=bool, default=True, help='Optionnal -Cotransition parameter: consecutive')
     distance_parser.add_argument('-tree', '--tree', type=str, help='Required for cotransition and PCS - Path to the newick tree file')
 
+    modules_parser = subparsers.add_parser('make_modules', help='Make modules from a distance matrix')
+    modules_parser.add_argument('-x', '--matrix', type=str, required=True, help='Path to the distance matrix')  
+    modules_parser.add_argument('-cl', '--clustering', type=str, required=True, choices=["label_propagation", "markov_clustering", "connected_components", "graph_modules", "hierarchical_clustering"], help='Clustering method to use: label_propagation, markov_clustering, connected_components, graph_modules, hierarchical_clustering')
+    modules_parser.add_argument('-o', '--output', type=str, required=True, help='Path to save the output modules')
+    modules_parser.add_argument('-d', '--distance', type=str, required=True, help='Distance metric used for build the distance matrix.')
+    modules_parser.add_argument('-m', '--method', type=str, help='Only if method is hierarchical_clustering. Method to use for hierarchical clustering: single, complete, average, weighted, centroid, median, ward')
+    modules_parser.add_argument('-cr', '--criterion', type=str, help='Only if method is hierarchical_clustering. Criterion to use for hierarchical clustering: distance, maxclust')
+    modules_parser.add_argument('-th', '--threshold', type=float, help='Threshold to use for graph construction - distance above the treshold or similarity below the treshold will not be included as edge.')
+    modules_parser.add_argument('-s', '--seed', type=int, help='Label propagation only. Seed to use for label propagation.')
+    modules_parser = subparsers.add_parser('phylogenetic_statistics', help='Compute phylogenetic statistics')
+    modules_parser.add_argument('-m', '--modules', type=str, required=True, help='Text file of list of genes, with a line for each cluster')
+    modules_parser.add_argument('-p', '--profil', type=str, help='Path to the profile matrix')
+    modules_parser.add_argument('-tree', '--path_tree', type=str, help='Path to the newick tree file')
+    modules_parser.add_argument('-o', '--output', type=str, help='Path to save the output phylogenetic statistics')
+    modules_parser.add_argument('-dl', '--dl_tree', type=bool, default=False, help='Use if this function should output an annotated by module')
+
     args = parser.parse_args()
     return args
 
 def profylo_cli():
     args = parse_args()
 
-    if args.distance_compute == 'distance_compute':
+    if args.mode == 'distance_compute':
         distance_profiles(
             method=args.method,
             x=args.matrix,
@@ -173,6 +201,30 @@ def profylo_cli():
             truncation=args.truncation,
             consecutive=args.consecutive,
             tree=args.tree,
+<<<<<<< Updated upstream:profylo/profylo.py
             path=args.output
         )
+<<<<<<< HEAD
 >>>>>>>> 5a710d5 (Added the command line interface of profylo):profylo/profylo.py
+=======
+=======
+            path=args.output)
+    elif args.mode == 'make_modules':
+        make_modules(
+            x=args.matrix,
+            clustering=args.clustering,
+            method=args.method,
+            criterion=args.criterion,
+            threshold=args.threshold,
+            distance=args.distance,
+            seed=args.seed,
+            path=args.output)
+    elif args.mode == 'phylogenetic_statistics':
+        phylogenetic_statistics(
+            x=args.modules,
+            profils=args.profil,
+            path_tree=args.path_tree,
+            path=args.output,
+            dl_tree=args.dl_tree)   
+>>>>>>> Stashed changes:profylo/Profylo.py
+>>>>>>> bf46ab2 (Adding more option to the command line)
