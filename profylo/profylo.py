@@ -1,9 +1,6 @@
 import profylo.distances as dst
 import profylo.pre_processing as pp
-<<<<<<<< HEAD:profylo/Profylo.py
 import profylo.post_processing as post
-========
->>>>>>>> 5a710d5 (Added the command line interface of profylo):profylo/profylo.py
 import warnings
 import argparse
 warnings.filterwarnings('ignore')
@@ -108,17 +105,6 @@ def distance_profiles(
     print("Done.")
     return result
 
-<<<<<<< HEAD
-
-<<<<<<< HEAD
-<<<<<<<< HEAD:profylo/Profylo.py
-=======
-<<<<<<< Updated upstream:profylo/profylo.py
-=======
->>>>>>> bf46ab2 (Adding more option to the command line)
-
-=======
->>>>>>> b4e1b0d (Minor update)
 def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
     if clustering == "label_propagation":
         if distance is None:
@@ -149,16 +135,7 @@ def make_modules(x, clustering, method = None, criterion = None, threshold = Non
 
 def phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
     post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
-<<<<<<< HEAD
-========
-=======
 
-<<<<<<< HEAD
-
->>>>>>> Stashed changes:profylo/Profylo.py
->>>>>>> bf46ab2 (Adding more option to the command line)
-=======
->>>>>>> b4e1b0d (Minor update)
 def parse_args():
     parser = argparse.ArgumentParser(description='Profylo: Phylogenetic profile distance manipulaion')
     subparsers = parser.add_subparsers(dest='mode', required=True, help='Mode selection')
@@ -201,21 +178,12 @@ def profylo_cli():
             method=args.method,
             x=args.matrix,
             y=args.matrix2,
-            type=args.type,
+            type="matrix",
             confidence=args.confidence,
             penalty=args.penalty,
             truncation=args.truncation,
             consecutive=args.consecutive,
             tree=args.tree,
-            path=args.output
-        )
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>>> 5a710d5 (Added the command line interface of profylo):profylo/profylo.py
-=======
-=======
-=======
->>>>>>> b4e1b0d (Minor update)
             path=args.output)
     elif args.mode == 'make_modules':
         make_modules(
@@ -233,10 +201,4 @@ def profylo_cli():
             profils=args.profil,
             path_tree=args.path_tree,
             path=args.output,
-<<<<<<< HEAD
             dl_tree=args.dl_tree)   
->>>>>>> Stashed changes:profylo/Profylo.py
->>>>>>> bf46ab2 (Adding more option to the command line)
-=======
-            dl_tree=args.dl_tree)   
->>>>>>> b4e1b0d (Minor update)
