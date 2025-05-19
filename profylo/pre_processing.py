@@ -53,7 +53,7 @@ def normalize(
     Returns:
         pd.DataFrame: Returns normalized continuous profiles matrix
     """
-    dfx = input(x, test_binary = False)
+    dfx = _input(x, test_binary = False)
     for i in dfx.index:
         dfx.loc[i] = dfx.loc[i]/max(dfx.loc[i])
     return dfx
@@ -110,7 +110,7 @@ def order_by_tree(
     """
     if tree is None:
         raise TypeError("A newick file is missing")
-    dfx = input(x, test_binary = False)
+    dfx = _input(x, test_binary = False)
     phylo = Phylo.read(tree, "newick")
     leaf = phylo.get_terminals()
     ordered_df = pd.DataFrame()
