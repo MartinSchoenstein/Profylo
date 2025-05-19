@@ -132,7 +132,6 @@ def make_modules(x, clustering, method = None, criterion = None, threshold = Non
         post.hierarchical_clustering(x, distance, criterion, threshold, method, path)
 
 
-
 def phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
     post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
 
