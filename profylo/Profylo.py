@@ -122,13 +122,13 @@ def _make_modules(x, clustering, method = None, criterion = None, threshold = No
             raise ValueError("Threshold to build edges is requested")
         post.graph_modules(x, distance, threshold, path)
     if clustering == "hierarchical_clustering":
-        if method is None :
-            raise ValueError("Method to use for clustering is requested")
+        if distance is None:
+            raise ValueError("Distance metric used is requested")
         if criterion is None :
             raise ValueError("Criterion to cut clusters is requested")
         if threshold is None :
             raise ValueError("Threshold to cut clusters is requested")
-        post.hierarchical_clustering(x, method, criterion, threshold, path)
+        post.hierarchical_clustering(x, distance, criterion, threshold, method, path)
 
 
 

@@ -73,16 +73,18 @@ def hierarchical_dendrogram(
 
 
 def hierarchical_clustering(
-    x,                       
-    method,                  
+    x,
+    distance,                          
     criterion,               
-    threshold,               
+    threshold,
+    method = "ward",              
     path = None              
 ):
     """Function for performing hierarchical clustering on distances between profiles
 
     Args:
         x (str, pd.DataFrame): Distance matrix
+        distance (str): Metric used to obtain distances
         method (str): Method to use for hierarchical clustering : "ward", "average", "weighted", "complete"
         criterion (str): The way to cut the clusters, by "distance" between clusters or by the "number" of clusters 
         threshold (int): Threshold to use for cutting clusters
@@ -93,6 +95,16 @@ def hierarchical_clustering(
     """
     dfx =  pp._input(x, test_binary = False)
     dfx = dfx.apply(pd.to_numeric, errors="coerce").fillna(0)
+    if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
+        dfx = 1- dfx
+        np.fill_diagonal(dfx.values, 0)
+    if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
+        np.fill_diagonal(dfx.values, 0)
+    if distance in ["pcs", "PCS"]:
+        max = dfx.max()
+        dfx = dfx/max
+        dfx = 1- dfx
+        np.fill_diagonal(dfx.values, 0)
     dfx = squareform(dfx)
     L = linkage(x, method)
     if criterion == "distance":
