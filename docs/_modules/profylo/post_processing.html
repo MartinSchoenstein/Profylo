@@ -151,16 +151,18 @@
 <div class="viewcode-block" id="hierarchical_clustering">
 <a class="viewcode-back" href="../../post_processing.html#profylo.post_processing.hierarchical_clustering">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">hierarchical_clustering</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">,</span>                       
-    <span class="n">method</span><span class="p">,</span>                  
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">distance</span><span class="p">,</span>                          
     <span class="n">criterion</span><span class="p">,</span>               
-    <span class="n">threshold</span><span class="p">,</span>               
+    <span class="n">threshold</span><span class="p">,</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;ward&quot;</span><span class="p">,</span>              
     <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span>              
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Function for performing hierarchical clustering on distances between profiles</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (str, pd.DataFrame): Distance matrix</span>
+<span class="sd">        distance (str): Metric used to obtain distances</span>
 <span class="sd">        method (str): Method to use for hierarchical clustering : &quot;ward&quot;, &quot;average&quot;, &quot;weighted&quot;, &quot;complete&quot;</span>
 <span class="sd">        criterion (str): The way to cut the clusters, by &quot;distance&quot; between clusters or by the &quot;number&quot; of clusters </span>
 <span class="sd">        threshold (int): Threshold to use for cutting clusters</span>
@@ -171,6 +173,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dfx</span> <span class="o">=</span>  <span class="n">pp</span><span class="o">.</span><span class="n">_input</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">test_binary</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">dfx</span> <span class="o">=</span> <span class="n">dfx</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cotransition&quot;</span><span class="p">,</span> <span class="s2">&quot;pearson&quot;</span><span class="p">,</span> <span class="s2">&quot;mi&quot;</span><span class="p">,</span> <span class="s2">&quot;Cotransition&quot;</span><span class="p">,</span> <span class="s2">&quot;Pearson&quot;</span><span class="p">,</span> <span class="s2">&quot;MI&quot;</span><span class="p">]</span> <span class="p">:</span>
+        <span class="n">dfx</span> <span class="o">=</span> <span class="mi">1</span><span class="o">-</span> <span class="n">dfx</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">dfx</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;svd_phy&quot;</span><span class="p">,</span> <span class="s2">&quot;jaccard&quot;</span><span class="p">,</span> <span class="s2">&quot;hamming&quot;</span><span class="p">,</span> <span class="s2">&quot;SVD_phy&quot;</span><span class="p">,</span> <span class="s2">&quot;Jaccard&quot;</span><span class="p">,</span> <span class="s2">&quot;Hamming&quot;</span><span class="p">]:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">dfx</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pcs&quot;</span><span class="p">,</span> <span class="s2">&quot;PCS&quot;</span><span class="p">]:</span>
+        <span class="nb">max</span> <span class="o">=</span> <span class="n">dfx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">dfx</span> <span class="o">=</span> <span class="n">dfx</span><span class="o">/</span><span class="nb">max</span>
+        <span class="n">dfx</span> <span class="o">=</span> <span class="mi">1</span><span class="o">-</span> <span class="n">dfx</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">dfx</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">dfx</span> <span class="o">=</span> <span class="n">squareform</span><span class="p">(</span><span class="n">dfx</span><span class="p">)</span>
     <span class="n">L</span> <span class="o">=</span> <span class="n">linkage</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">criterion</span> <span class="o">==</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span>
@@ -188,7 +200,7 @@
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cluster_recap</span></div>
 
-
+ 
 
 <div class="viewcode-block" id="graph_modules">
 <a class="viewcode-back" href="../../post_processing.html#profylo.post_processing.graph_modules">[docs]</a>
@@ -380,9 +392,11 @@
         <span class="k">if</span> <span class="n">complete_results</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">path2</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.tsv&quot;</span>
             <span class="n">goeaobj</span><span class="o">.</span><span class="n">wr_tsv</span><span class="p">(</span><span class="n">path2</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">path1</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;resume_results.csv&quot;</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">complete_results</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">path1</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/resume_results.csv&quot;</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path1</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">complete_results</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
 
 
@@ -420,12 +434,14 @@
         <span class="n">profils_selection</span> <span class="o">=</span> <span class="n">profils</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">selection</span><span class="p">]</span>
     <span class="n">profils_selection</span> <span class="o">=</span> <span class="n">profils_selection</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">profils_selection</span> <span class="o">=</span> <span class="n">profils_selection</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">)</span>
-    <span class="n">tree</span> <span class="o">=</span> <span class="n">Phylo</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s2">&quot;newick&quot;</span><span class="p">)</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="nb">format</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">clades</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">new_col</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">profils_selection</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">add</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">phylogenie</span> <span class="o">=</span> <span class="p">[</span><span class="n">clade</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">clade</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">if</span> <span class="n">clade</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">leaf_node</span> <span class="o">=</span> <span class="n">tree</span><span class="o">&amp;</span><span class="n">c</span> 
+            <span class="n">ancestor</span> <span class="o">=</span> <span class="n">leaf_node</span><span class="o">.</span><span class="n">get_ancestors</span><span class="p">()</span>
+            <span class="n">phylogenie</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">ancestor</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">clade</span> <span class="ow">in</span> <span class="n">phylogenie</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">clade</span><span class="p">)</span> <span class="ow">in</span> <span class="n">clades</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">add</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
