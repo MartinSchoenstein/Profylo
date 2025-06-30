@@ -26,7 +26,7 @@ pip install .
 
 ## How to use
 
-Here are some examples of how to use Profylo, using some important functions. The data used and generated files are available on GitHub in /example.
+Here are some examples of how to use Profylo, using some important functions. The data used and generated files are available on GitHub in the example folder.
 
 Profile processing and modification functions, some used automatically by the library (such as transformation into transition vector) are available but not described here:
 ```python
@@ -40,7 +40,7 @@ from profylo import pre_processing as pre
 ```python
 from profylo import Profylo as pro
 
-pro.distance_profiles(x = "/exemple/profiles.csv",  tree = "/exemple/tree.nwk", method = "cotransition", consecutive = False, path = "exemple/cotransition_similarity.csv")
+pro.distance_profiles(x = "example/profiles.csv",  tree = "example/tree.nwk", method = "cotransition", consecutive = False, path = "example/cotransition_similarity.csv")
 ```
 Other similarity or distance metrics are available, some with their own customization options, and some without requiring a phylogenetic tree.
   
@@ -50,7 +50,7 @@ Other similarity or distance metrics are available, some with their own customiz
 ```python
 from profylo import post_processing as post 
 
-post.graph_modules("exemple/cotransition_similarity.csv", distance = "cotransition", threshold = 0.3, path = "exemple/connected_components.txt")
+post.graph_modules("example/cotransition_similarity.csv", distance = "cotransition", threshold = 0.3, path = "example/connected_components.txt")
 ```
 Other clustering methods, some graph-based and non-graph-based, are available.
   
@@ -61,14 +61,14 @@ Other clustering methods, some graph-based and non-graph-based, are available.
 ```python
 from profylo import post_processing as post 
 
-post.profils_heatmap("exemple/profiles.csv", ['P22102', 'P31939', 'Q06203', 'O15067'], tree = "exemple/tree.nwk", path = "exemple/heatmaps_cluster5.png")
+post.profils_heatmap("example/profiles.csv", ['P22102', 'P31939', 'Q06203', 'O15067'], tree = "example/tree.nwk", path = "example/heatmaps_cluster5.png")
 ```
 
 - Annotated tree (to be viewed in external software):
 ```python
 from profylo import post_processing as post 
 
-post.tree_annotation(['P22102', 'P31939', 'Q06203', 'O15067'], "exemple/profiles.csv", path_tree = "exemple/tree.nwk", path = "exemple/annotated_tree_cluster5.nhx")
+post.tree_annotation(['P22102', 'P31939', 'Q06203', 'O15067'], "example/profiles.csv", path_tree = "example/tree.nwk", path = "example/annotated_tree_cluster5.nhx")
 ```
   
 
@@ -77,7 +77,7 @@ post.tree_annotation(['P22102', 'P31939', 'Q06203', 'O15067'], "exemple/profiles
 ```python
 from profylo import post_processing as post 
 
-post.go_enrichment("exemple/connected_components.txt", gaf = "exemple/gaf.gaf", path = "GO_enrichment.csv")
+post.go_enrichment("example/connected_components.txt", gaf = "example/gaf.gaf", path = "GO_enrichment.csv")
 ```
   
 
@@ -86,7 +86,7 @@ post.go_enrichment("exemple/connected_components.txt", gaf = "exemple/gaf.gaf", 
 ```python
 from profylo import post_processing as post 
 
-post.phylogenetic_statistics("exemple/connected_components.txt", profils = "exemple/profiles.csv", path_tree = "exemple/tree.nwk", path = "exemple/phylogenetic_statistics.csv")
+post.phylogenetic_statistics("example/connected_components.txt", profils = "example/profiles.csv", path_tree = "example/tree.nwk", path = "example/phylogenetic_statistics.csv")
 ```
 
 ---
