@@ -80,7 +80,7 @@ def pearson(dfx, dfy = None):
     return pearson_results
 
 
-def mi(dfx, dfy = None):
+def mi_ori(dfx, dfy = None):
     symetry = False
     if dfy is None:
         dfy = dfx
@@ -95,6 +95,54 @@ def mi(dfx, dfy = None):
             mi_distance[a, b] = score_temp
             if symetry:
                 mi_distance[b, a] = score_temp
+    index=dfx.index 
+    columns=dfy.index
+    mi_distance = pd.DataFrame(mi_distance, index=index, columns=columns)
+    mi_distance = mi_distance.fillna(0)
+    return mi_distance
+
+def mi(dfx, dfy = None):
+    npx = dfx.to_numpy()
+    symetry = False
+    if dfy is None:
+        dfy = dfx
+        npy = npx
+        symetry=True
+    mi_distance = np.zeros((len(dfx.index), len(dfy.index)))
+    for i in range(len(dfx)):
+        query = npx[i]
+
+        p1 = np.sum(query)/len(query)
+        if p1 == 1 or p1 ==0:
+            entropy_i=0
+        else:
+            entropy_i = -(p1*np.log(p1) + (1-p1)*np.log(1-p1))
+
+        if symetry:
+            loop_range = range(i,len(dfy))
+        else:
+            loop_range = range(len(dfy))
+
+        for j in loop_range:
+            p1 = np.sum(npy[j])/len(npy[j])
+            if p1 == 1 or p1 ==0:
+                entropy_j = 0
+            else:
+                entropy_j = -(p1*np.log(p1) + (1-p1)*np.log(1-p1) )
+            vsize = len(query)
+            p11 = np.sum(np.logical_and(query,npy[j] ))/vsize
+            diff = np.logical_xor(query,npy[j])
+            p01 = np.sum(np.logical_and(query, diff))/vsize
+            p10=  np.sum(np.logical_and(npy[j], diff))/vsize
+
+            p00 = np.sum(np.logical_and(np.logical_not(query),np.logical_not(npy[j] )))/vsize
+            cross_ent = -np.sum([x*np.log(x) for x in [p11,p01,p10,p00] if x!=0])
+            mi = entropy_i+entropy_j - cross_ent 
+            mi = np.round(mi,15)
+
+            mi_distance[i, j] = mi
+            if symetry:
+                mi_distance[j, i] = mi
     index=dfx.index 
     columns=dfy.index
     mi_distance = pd.DataFrame(mi_distance, index=index, columns=columns)
@@ -212,7 +260,7 @@ def pcs(tvx, tvy, confidence=1.5, penalty=0.6):
 
 def SVD_phy(dfx, truncation = 0.5): 
     U, S, V = np.linalg.svd(dfx,False) #SVD de la matrice dfx
-    k = int(truncation * len(U)) #nb de colonnes à garder dans U
+    k = int(truncation * np.shape(U)[1]) #nb de colonnes à garder dans U
     U_truncated = U[:, :k] #ajout des colonnes U
     norms = np.linalg.norm(U_truncated, axis=1, keepdims=True)
     U_truncated = U_truncated / norms
@@ -224,5 +272,5 @@ def SVD_phy(dfx, truncation = 0.5):
         for j in range(0, len(U_truncated)):
             SVDphy_distance[i][j] = np.sqrt(np.sum((subset_U[i] - U_truncated[j])**2))
     SVDphy_distance = pd.DataFrame(SVDphy_distance, index=row_labels, columns=col_labels)
-    SVDphy_distance = SVDphy_distance.fillna(1)
+    SVDphy_distance = SVDphy_distance.fillna(SVDphy_distance.to_numpy().max())
     return SVDphy_distance
