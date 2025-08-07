@@ -2,8 +2,9 @@
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["profylo"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["profylo*", "example*"]
 
 [project]
 name = "profylo"
@@ -12,8 +13,8 @@ authors = [
     {name = "Pauline Mermillod", email = "pauline.mermillod@etu.unistra.fr"}
 ]
 description = "Easy-to-use package for processing and comparing phylogenetic profiles, extracting functional modules and analyzing them" 
-readme = "README.rst"
-version = "1.0.0"
+readme = "README.md"
+version = "1.0.1"
 requires-python = "<3.13"
 keywords = [
     "phylogenetic-profiles",
@@ -32,17 +33,17 @@ keywords = [
 license = {text = "LGPL-3.0"}
 
 dependencies = [
-    'biopython==1.85',
-    'numpy==2.1.3',
-    'pandas==2.2.3',
-    'scikit-learn==1.6.1',
-    'scipy==1.15.2',
-    'networkx==3.4.2',
-    'matplotlib==3.10.1',
-    'seaborn==0.13.2',
-    'urllib3==2.4.0',
-    'goatools==1.4.12',
-    'ete3==3.1.3',
+    'biopython>=1.66',
+    'numpy>=2.0.0',
+    'pandas>=2.2.0',
+    'scikit-learn>=1.0',
+    'scipy>=1.1.0',
+    'networkx>=3.0',
+    'matplotlib>=3.0.0',
+    'seaborn>=0.6.0',
+    'urllib3==2.0.2',
+    'goatools>=1.0.2',
+    'ete3>=3.1.1',
     'markov-clustering==0.0.6.dev0'
 ]
 
