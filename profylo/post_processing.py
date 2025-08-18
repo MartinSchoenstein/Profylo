@@ -46,6 +46,17 @@ def _input_module(x):
     else:
         ("Only accepted types for x are: a path to a txt file or a list type variable")
 
+def make_pair_list(path, sep="\t"):
+    pairs = set()
+    with open(path) as infile:
+        for line in infile.readlines():
+            line = line.strip("\n")
+            if line =="":
+                continue
+            sec = line.split(sep)
+            pairs.add(tuple(sorted([sec[0],sec[1]])))
+    return pairs
+
 def hierarchical_dendrogram(
     x,                       
     method,                  
@@ -127,7 +138,8 @@ def graph_modules(
     x,                       
     distance,                
     threshold,               
-    path = None              
+    path = None,
+    exclude_pairs = None
 ):
     """Function to represent distances between profiles in a graph and extract connected components as modules
 
@@ -146,7 +158,7 @@ def graph_modules(
         x_mask = dfx.mask(dfx < threshold, 0)
         np.fill_diagonal(x_mask.values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
-        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(1)
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         x_mask = dfx.mask(dfx > threshold, 1)
         np.fill_diagonal(x_mask.values, 1)
         x_mask = 1 - x_mask
@@ -157,6 +169,10 @@ def graph_modules(
         x_mask = x_mask/max
         np.fill_diagonal(x_mask.values, 0)
     G = nx.from_pandas_adjacency(x_mask)
+
+    if exclude_pairs:
+        G.remove_edges_from(exclude_pairs)
+
     G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
     modules_recap = []
     for c in sorted(nx.connected_components(G), key=len, reverse=True):
@@ -171,7 +187,8 @@ def graph_modules(
 def markov_clustering(
     x,                       
     distance,                
-    path = None              
+    path = None,
+    exclude_pairs =None
 ):
     """Function to represent distances between profiles in a graph and performe markov clustering
 
@@ -189,17 +206,19 @@ def markov_clustering(
         dfx[dfx < 0] = 0
         np.fill_diagonal(dfx.values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
-        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(1)
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         np.fill_diagonal(dfx.values, 1)
         dfx = 1 - dfx
     if distance in ["pcs", "PCS"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         dfx[dfx < 0] = 0
-        max = dfx.max()
+        max = np.nanmax(dfx.to_numpy())
         dfx = dfx/max
         np.fill_diagonal(dfx.values, 0)
     G = nx.from_pandas_adjacency(dfx)
     G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
+    if exclude_pairs:
+        G.remove_edges_from(exclude_pairs)
     matrix = nx.to_numpy_array(G)
     result = mc.run_mcl(matrix)
     clusters = mc.get_clusters(result)
@@ -222,7 +241,8 @@ def label_propagation(
     distance,                
     threshold,               
     seed = None,             
-    path = None              
+    path = None,
+    exclude_pairs = None
 ):
     """Function to represent distances between profiles in a graph and performe label propagation clustering
 
@@ -242,18 +262,18 @@ def label_propagation(
         x_mask = dfx.mask(dfx < threshold, 0)
         np.fill_diagonal(x_mask.values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
-        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(1)
+        dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         x_mask = dfx.mask(dfx > threshold, 1)
         np.fill_diagonal(x_mask.values, 1)
         x_mask = 1 - x_mask
     if distance in ["pcs", "PCS"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
-        max = x_mask.max()
-        x_mask = x_mask/max
         np.fill_diagonal(x_mask.values, 0)
     G = nx.from_pandas_adjacency(x_mask)
     G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
+    if exclude_pairs:
+        G.remove_edges_from(exclude_pairs)
     F = fast_label_propagation_communities(G, seed = seed, weight = None)
     label_recap = []
     for c in sorted(F, key=len, reverse=True):
@@ -310,12 +330,27 @@ def go_enrichment(
     return df
 
 
+def plot_modules(
+        modules,
+        profiles,
+        tree = None,
+        output_folder= "./"
+):
+    profils = pp._input(profiles, test_binary = False)
+    modules = _input_modules(modules)
+    for i, module in enumerate(modules):
+        if tree:
+            order=True
+        else:
+            order=False
+        profils_heatmap(profils,selection=module,tree=tree, order=order,path=f"{output_folder}/{i}.png")
+
 def profils_heatmap(
     x,                       
     selection = None,        
     tree = None,             
     clades = None,           
-    ordered = False,         
+    order = False,         
     path = None              
 ):
     """Function to represent profiles (presence/absence) on a heatmap
@@ -328,12 +363,12 @@ def profils_heatmap(
         ordered (bool, optional): True if profils are already ordered else need a Newick tree. Defaults to False.
         path (str, optional): Path to download the heatmap. Defaults to None.
     """
-    if ordered == False and tree == None:
+    if order and tree == None:
         raise ValueError("Need a tree to order profiles")
     if clades is not None and tree == None:
         raise ValueError("Need tree to obtain phylogenetic informations")
     profils = pp._input(x, test_binary = False)
-    if ordered == False :
+    if order :
         profils = pp.order_by_tree(profils, tree)
     if selection is None:
         profils_selection = profils
@@ -341,7 +376,7 @@ def profils_heatmap(
         profils_selection = profils.loc[selection]
     profils_selection = profils_selection.fillna(0)
     profils_selection = profils_selection.apply(pd.to_numeric)
-    tree = Tree(tree, format = 8)
+    tree = Tree(tree, format = 1, quoted_node_names=True)
     if clades is not None:
         new_col = []
         for c in profils_selection.columns:
@@ -408,14 +443,17 @@ def tree_annotation(
     profils = pp._input(profils, test_binary = False)
     x = _input_module(x)
     liste_tree = []
+    node_obs = dict()
     for gene in x:
+
+        j+=1
         unique = False
-        t = Tree(path_tree, format = 8)
+        t = Tree(path_tree, format = 1,quoted_node_names=True)
         for leaf in TreeNode.iter_leaves(t):
             leaf.add_feature("state", profils.loc[gene, leaf.name])
         AC = TreeNode.get_tree_root(t)
         _state_on_nodes(AC)
-        if sum(profils.loc[gene]) == 1:
+        if sum(profils.loc[gene]) <= 1:
             unique = True
             oldest_node = ""
             all_kids = []
@@ -440,17 +478,14 @@ def tree_annotation(
                             node.state = 0
                     elif node not in all_kids:
                         node.state = 0
+            node_obs[node.name] = node_obs.get(node.name,0)+node.state
         liste_tree.append(t)
-    t_mean = Tree(path_tree, format = 8)
+    t_mean = Tree(path_tree, format = 1, quoted_node_names=True)
     for node in t_mean.traverse(strategy="postorder"):
-        mean = 0
-        for tree in liste_tree:
-            n = tree&node.name
-            mean = mean + int(n.state)
-        mean = mean / len(liste_tree)
+        mean = node_obs[node.name] / len(liste_tree)
         node.add_feature("state", mean)
     if path is not None:
-        t_mean.write(outfile=path, format=8, features=["state"])
+        t_mean.write(outfile=path, format=1, features=["state"])
     return t_mean
 
 
@@ -493,7 +528,7 @@ def phylogenetic_statistics(
                         parsimony = parsimony + 1
         if dl_tree is True and path is not None:
             path_tree_dl = path + "/" + str(i + 1) + ".nhx"
-            t_mean.write(outfile=path_tree_dl, format=8, features=["state"])
+            t_mean.write(outfile=path_tree_dl, format=1, features=["state"])
         df.loc[i] = [i + 1, 1 if isinstance(module, Tree) else len(module), parsimony, presence, LCA]
     if path is not None:
         if dl_tree is True:

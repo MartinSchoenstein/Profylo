@@ -105,23 +105,26 @@ def distance_profiles(
     print("Done.")
     return result
 
-def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None):
+def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None, exclude_pairs=None):
+    pairs_to_exclude = None
+    if exclude_pairs:
+        pairs_to_exclude = post.make_pair_list(exclude_pairs)
     if clustering == "label_propagation":
         if distance is None:
             raise ValueError("Distance metric used is requested")
         if threshold is None :
             raise ValueError("Treshold to build edges is requested")
-        post.label_propagation(x, distance, threshold, seed, path)
+        post.label_propagation(x, distance, threshold, seed, path, pairs_to_exclude)
     if clustering == "markov_clustering":
         if distance is None :
             raise ValueError("Distance metric used is requested")
-        post.markov_clustering(x, distance, path)
+        post.markov_clustering(x, distance, path, pairs_to_exclude)
     if clustering == "connected_components" or clustering == "graph_modules":
         if distance is None :
             raise ValueError("Distance metric used is requested")
         if threshold is None :
             raise ValueError("Threshold to build edges is requested")
-        post.graph_modules(x, distance, threshold, path)
+        post.graph_modules(x, distance, threshold, path, pairs_to_exclude)
     if clustering == "hierarchical_clustering":
         if distance is None:
             raise ValueError("Distance metric used is requested")
@@ -159,13 +162,22 @@ def parse_args():
     modules_parser.add_argument('-cr', '--criterion', type=str, help='Only if method is hierarchical_clustering. Criterion to use for hierarchical clustering: distance, maxclust')
     modules_parser.add_argument('-th', '--threshold', type=float, help='Threshold to use for graph construction - distance above the treshold or similarity below the treshold will not be included as edge.')
     modules_parser.add_argument('-s', '--seed', type=int, help='Label propagation only. Seed to use for label propagation.')
+    modules_parser.add_argument('-p', '--exclude_pairs', type=str, help='Path to a tsv file containing to exclude from the predicted module.(eg paralogs). Works with graph based methods.')
     modules_parser = subparsers.add_parser('phylogenetic_statistics', help='Compute phylogenetic statistics')
     modules_parser.add_argument('-m', '--modules', type=str, required=True, help='Text file of list of genes, with a line for each cluster')
     modules_parser.add_argument('-p', '--profil', type=str, required=True, help='Path to the profile matrix')
     modules_parser.add_argument('-tree', '--path_tree', required=True, type=str, help='Path to the newick tree file')
     modules_parser.add_argument('-o', '--output', required=True, type=str, help='Path to save the output phylogenetic statistics')
     modules_parser.add_argument('-dl', '--dl_tree',   action="store_true", help='Use if this function should output an annotated by module')
-
+    modules_parser = subparsers.add_parser('go_enrichment', help='Compute GO enrichment')
+    modules_parser.add_argument('-m', '--modules', type=str, required=True, help='Text file of list of genes, with a line for each cluster')
+    modules_parser.add_argument('-g', '--go', type=str, required=True, help='Path to a gene2go file in the gaf format')
+    modules_parser.add_argument('-o', '--output', required=True, type=str, help='Path to save the output phylogenetic statistics')
+    modules_parser = subparsers.add_parser('plot_modules', help='Compute GO enrichment')
+    modules_parser.add_argument('-m', '--modules', type=str, required=True, help='Text file of list of genes, with a line for each cluster')
+    modules_parser.add_argument('-p', '--profil', type=str, required=True,  help='Path to the profile matrix')
+    modules_parser.add_argument('-t', '--path_tree', type=str, help='Path to a tree to order the profiles')
+    modules_parser.add_argument('-o', '--output', required=True, type=str, help='Path to the folder where to save the output')
     args = parser.parse_args()
     return args
 
@@ -193,13 +205,25 @@ def profylo_cli():
             threshold=args.threshold,
             distance=args.distance,
             seed=args.seed,
-            path=args.output)
+            path=args.output,
+            exclude_pairs=args.exclude_pairs)
     elif args.mode == 'phylogenetic_statistics':
         phylogenetic_statistics(
             x=args.modules,
             profils=args.profil,
             path_tree=args.path_tree,
             path=args.output,
-            dl_tree=args.dl_tree)   
+            dl_tree=args.dl_tree)
+    elif args.mode =='go_enrichment':
+        post.go_enrichment(
+            x=args.modules,
+            gaf=args.go,
+            path=args.output)
+    elif args.mode=='plot_modules':
+        post.plot_modules(modules = args.modules,
+                          profiles= args.profil,
+                        tree = args.path_tree,
+                        output_folder=args.output)
+
 def _phylogenetic_statistics(x, profils = None, path_tree = None, path = None, dl_tree = False):
     post.phylogenetic_statistics(x, profils, path_tree, path, dl_tree)
