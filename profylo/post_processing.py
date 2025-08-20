@@ -309,15 +309,20 @@ def go_enrichment(
     gene2go = read_gaf(gaf, godag=godag, namespace=None)
     genes_fond = set(gene2go.keys())
     x = _input_modules(x)
-    df = pd.DataFrame(columns = ["length","GO/P-value(bh)_1", "GO/P-value(bh)_2", "GO/P-value(bh)_3", "GO/P-value(bh)_4", "GO/P-value(bh)_5"])
+    df = pd.DataFrame(columns = ["length"]+ [y+f'_{i}'  for i in range(1,6) for y  in ["GO_ID","GO_Term","FDR_BH"] ])
+
     for i, module in enumerate(x):
         goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
         results = goeaobj.run_study(module)
         results = sorted(results, key = lambda x: x.p_fdr_bh)[:5]
         data = {}
+        data["length"] = len(module)
         for j, res in enumerate(results):
-            data["length"] = len(module)
-            data["GO/P-value(bh)_" + str(j+1)] = [res.GO, res.name, res.p_fdr_bh]
+            data[f"GO_ID_{j+1}"] = res.GO
+            data[f"GO_Term_{j+1}"] = res.name
+            data[f"FDR_BH_{j+1}"] = res.p_fdr_bh
+
+
         df.loc[len(df)] = data
         if complete_results is True:
             path2 = path + "/" + str(i) + ".tsv"
