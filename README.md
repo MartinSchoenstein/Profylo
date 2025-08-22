@@ -55,7 +55,7 @@ post.graph_modules("example/cotransition_similarity.csv", distance = "cotransiti
 Other clustering methods, some graph-based and non-graph-based, are available.
   
 
-#### 3) Visualiation of a module:
+#### 3) Module visualization:
 
 - Heatmaps (It would have been possible to highlight certain clades with the *clades* argument of the function):
 ```python
