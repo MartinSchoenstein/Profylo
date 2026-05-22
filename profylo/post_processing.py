@@ -57,6 +57,13 @@ def make_pair_list(path, sep="\t"):
             pairs.add(tuple(sorted([sec[0],sec[1]])))
     return pairs
 
+def diagonal(d, v):
+    arr = d.to_numpy(copy=True)
+    np.fill_diagonal(arr, v)
+    d.iloc[:, :] = arr
+    return d
+
+
 def hierarchical_dendrogram(
     x,                       
     method,                  
@@ -73,7 +80,8 @@ def hierarchical_dendrogram(
     dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
     dfx[dfx < 0] = 0
     dfx = 1 - dfx
-    np.fill_diagonal(dfx.values, 0)
+    dfx = diagonal(dfx, 0)
+    #np.fill_diagonal(dfx.values, 0)
     dfx = squareform(dfx)
     L = linkage(dfx, method)
     plt.figure(figsize=(25, 10))
@@ -108,16 +116,19 @@ def hierarchical_clustering(
     dfx = dfx.apply(pd.to_numeric, errors="coerce").fillna(0)
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = 1- dfx
-        np.fill_diagonal(dfx.values, 0)
+        dfx = diagonal(dfx, 0)
+        #np.fill_diagonal(dfx.values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
-        np.fill_diagonal(dfx.values, 0)
+        #np.fill_diagonal(dfx.values, 0)
+        dfx = diagonal(dfx, 0)
     if distance in ["pcs", "PCS"]:
         max = dfx.max()
         dfx = dfx/max
         dfx = 1- dfx
-        np.fill_diagonal(dfx.values, 0)
+        #np.fill_diagonal(dfx.values, 0)
+        dfx = diagonal(dfx, 0)
     dfx = squareform(dfx)
-    L = linkage(x, method)
+    L = linkage(dfx, method)
     if criterion == "distance":
             clusters = fcluster(L, threshold, "distance")
     if criterion == "number":
@@ -156,18 +167,21 @@ def graph_modules(
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
-        np.fill_diagonal(x_mask.values, 0)
+        x_mask = diagonal(x_mask, 0)
+        #np.fill_diagonal(x_mask.values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         x_mask = dfx.mask(dfx > threshold, 1)
-        np.fill_diagonal(x_mask.values, 1)
+        #np.fill_diagonal(x_mask.values, 1)
+        x_mask = diagonal(x_mask, 1)
         x_mask = 1 - x_mask
     if distance in ["pcs", "PCS"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
         max = x_mask.max()
         x_mask = x_mask/max
-        np.fill_diagonal(x_mask.values, 0)
+        #np.fill_diagonal(x_mask.values, 0)
+        x_mask = diagonal(x_mask, 0)
     G = nx.from_pandas_adjacency(x_mask)
 
     if exclude_pairs:
@@ -204,17 +218,20 @@ def markov_clustering(
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         dfx[dfx < 0] = 0
-        np.fill_diagonal(dfx.values, 0)
+        #np.fill_diagonal(dfx.values, 0)
+        dfx = diagonal(dfx, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
-        np.fill_diagonal(dfx.values, 1)
+        dfx = diagonal(dfx, 1)
+        #np.fill_diagonal(dfx.values, 1)
         dfx = 1 - dfx
     if distance in ["pcs", "PCS"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         dfx[dfx < 0] = 0
         max = np.nanmax(dfx.to_numpy())
         dfx = dfx/max
-        np.fill_diagonal(dfx.values, 0)
+        #np.fill_diagonal(dfx.values, 0)
+        dfx = diagonal(dfx, 0)
     G = nx.from_pandas_adjacency(dfx)
     G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
     if exclude_pairs:
@@ -260,16 +277,19 @@ def label_propagation(
     if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
-        np.fill_diagonal(x_mask.values, 0)
+        x_mask = diagonal(x_mask, 0)
+        #np.fill_diagonal(x_mask.values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         x_mask = dfx.mask(dfx > threshold, 1)
-        np.fill_diagonal(x_mask.values, 1)
+        x_mask = diagonal(x_mask, 1)
+        #np.fill_diagonal(x_mask.values, 1)
         x_mask = 1 - x_mask
     if distance in ["pcs", "PCS"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
-        np.fill_diagonal(x_mask.values, 0)
+        x_mask = diagonal(x_mask, 0)
+        #np.fill_diagonal(x_mask.values, 0
     G = nx.from_pandas_adjacency(x_mask)
     G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
     if exclude_pairs:
