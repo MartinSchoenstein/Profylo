@@ -326,7 +326,10 @@ def go_enrichment(
     if not os.path.exists("go.obo"):
         urllib.request.urlretrieve(go_obo_url, "go.obo")
     godag = GODag("go.obo")
-    gene2go = read_gaf(gaf, godag=godag, namespace=None)
+    if isinstance(gaf, str):
+        gene2go = read_gaf(gaf, godag=godag, namespace=None)
+    else:
+        gene2go = gaf
     genes_fond = set(gene2go.keys())
     x = _input_modules(x)
     df = pd.DataFrame(columns = ["length"]+ [y+f'_{i}'  for i in range(1,6) for y  in ["GO_ID","GO_Term","FDR_BH"] ])
