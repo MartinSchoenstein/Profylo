@@ -13,6 +13,7 @@ from scipy.spatial.distance import squareform
 import os
 import urllib.request
 from goatools.obo_parser import GODag
+from goatools.base import download_go_basic_obo
 from goatools.associations import read_gaf
 from goatools.test_data.genes_NCBI_9606_ProteinCoding import GENEID2NT
 from goatools.goea.go_enrichment_ns import GOEnrichmentStudy
@@ -322,9 +323,8 @@ def go_enrichment(
     Returns:
         pd.DataFrame: Return resume results for each module
     """
-    go_obo_url = "http://current.geneontology.org/ontology/go-basic.obo"
     if not os.path.exists("go.obo"):
-        urllib.request.urlretrieve(go_obo_url, "go.obo")
+        download_go_basic_obo("go.obo")
     godag = GODag("go.obo")
     if isinstance(gaf, str):
         gene2go = read_gaf(gaf, godag=godag, namespace=None)
