@@ -386,9 +386,9 @@ def profils_heatmap(
     Args:
         x (str, pd.DataFrame): Profile matrix
         selection (list, optional): Genes selection to represent. Defaults to None.
-        tree (str, optional): Newick tree to order profils, not necessary if ordered = True. Defaults to None.
+        tree (str, optional): Newick tree to order profils, necessary if order = True. Defaults to None.
         clades (list, optional): Clades to highlight on heatmaps. Defaults to None.
-        ordered (bool, optional): True if profils are already ordered else need a Newick tree. Defaults to False.
+        order (bool, optional): True if profils need to be ordered -->  need a Newick tree. Defaults to False.
         path (str, optional): Path to download the heatmap. Defaults to None.
     """
     if order and tree == None:
