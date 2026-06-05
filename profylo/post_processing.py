@@ -17,6 +17,7 @@ from goatools.base import download_go_basic_obo
 from goatools.associations import read_gaf
 from goatools.test_data.genes_NCBI_9606_ProteinCoding import GENEID2NT
 from goatools.goea.go_enrichment_ns import GOEnrichmentStudy
+from goatools.associations import read_associations
 import markov_clustering as mc
 from networkx.algorithms.community import fast_label_propagation_communities
 from ete3 import Tree, TreeNode
@@ -308,7 +309,8 @@ def label_propagation(
 
 def go_enrichment(
     x,                       
-    gaf,                 
+    gaf,
+    type = 'gene2go',                 
     path = None,             
     complete_results = False 
 ):
@@ -316,7 +318,8 @@ def go_enrichment(
 
     Args:
         x (str, list): List of list of genes (UNIPROT ID) or txt file with a line for each cluster
-        gene2go (str): Link to a gene2go file like "http://current.geneontology.org/annotations/goa_human.gaf.gz"
+        gene2go (str): Link to a gene2go file like "http://current.geneontology.org/annotations/goa_human.gaf.gz  /  association file id2gos"
+        type (str, optional): gene2go or id2gos. Defaults to gene2go
         path (str, optional): Path to a dir to download full enrichment results. Defaults to None.
         complete_results (bool, optional): If =True, download full set of results files comming from goatools. Defaults to False.
 
@@ -327,7 +330,12 @@ def go_enrichment(
         download_go_basic_obo("go.obo")
     godag = GODag("go.obo")
     if isinstance(gaf, str):
-        gene2go = read_gaf(gaf, godag=godag, namespace=None)
+        if type == 'gene2go':
+            gene2go = read_gaf(gaf, godag=godag, namespace=None)
+        elif type == 'id2gos':
+            gene2go = read_associations(gaf)
+        else:
+            return "type need to be 'gene2go' or 'id2gos'. Defaults to 'gene2go'"
     else:
         gene2go = gaf
     genes_fond = set(gene2go.keys())
