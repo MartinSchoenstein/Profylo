@@ -318,7 +318,7 @@ def go_enrichment(
 
     Args:
         x (str, list): List of list of genes (UNIPROT ID) or txt file with a line for each cluster
-        gene2go (str): Link to a gene2go file like "http://current.geneontology.org/annotations/goa_human.gaf.gz  /  association file id2gos"
+        gene2go (str): Link to a gene2go file like "http://current.geneontology.org/annotations/goa_human.gaf.gz  /  association file id2gos like "https://raw.githubusercontent.com/tanghaibao/goatools/main/data/association"
         type (str, optional): gene2go or id2gos. Defaults to gene2go
         path (str, optional): Path to a dir to download full enrichment results. Defaults to None.
         complete_results (bool, optional): If =True, download full set of results files comming from goatools. Defaults to False.
