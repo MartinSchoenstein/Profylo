@@ -198,6 +198,7 @@ def profylo_cli():
             truncation=args.truncation,
             consecutive=args.consecutive,
             tree=args.tree,
+            n_job=args.jobs,
             path=args.output)
     elif args.mode == 'make_modules':
         make_modules(
