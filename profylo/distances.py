@@ -211,7 +211,7 @@ def cotransition_loop(tvx, tvy, a, i, symetry, consecutive):
             #tableau de contingence:
         contingency_table = [[abs(k),t1-abs(k)], [t2-abs(k),(len(tvx.columns))-t1-t2+abs(k)]]
         score = fisher_exact(contingency_table, alternative="greater")
-        row_p_value[b] = score.p_value
+        row_p_value[b] = score.pvalue
     return a, row, row_p_value
 
 def cotransition(n_job, tvx, tvy = None, consecutive = True):
