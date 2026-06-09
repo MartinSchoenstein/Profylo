@@ -150,7 +150,9 @@ def hierarchical_clustering(
 def graph_modules(
     x,                       
     distance,                
-    threshold,               
+    threshold,
+    p_values = None,
+    threshold_p_values = 0.001,               
     path = None,
     exclude_pairs = None
 ):
@@ -160,6 +162,8 @@ def graph_modules(
         x (str, pd.DataFrame): Distance matrix
         distance (str): Metric used to obtain distances
         threshold (int): Trust threshold for creating edges
+        p_values (str, pd.DataFrame, optional): Cotransition p-values, can be used to filter reliable distances. Default to None
+        threshold_p_values (float): Trust threshold for cotransition p-values. Default to 0.001
         path (str, optional): Path to download the modules. Defaults to None.
 
     Returns:
@@ -171,6 +175,9 @@ def graph_modules(
         x_mask = dfx.mask(dfx < threshold, 0)
         x_mask = diagonal(x_mask, 0)
         #np.fill_diagonal(x_mask.values, 0)
+        if p_values is not None:
+            df_p = pp._input(p_values, test_binary = False)
+            x_mask = x_mask.mask(df_p < threshold_p_values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         x_mask = dfx.mask(dfx > threshold, 1)
@@ -202,7 +209,9 @@ def graph_modules(
 
 def markov_clustering(
     x,                       
-    distance,                
+    distance,
+    p_values = None,
+    threshold_p_values = 0.001,                
     path = None,
     exclude_pairs =None
 ):
@@ -211,6 +220,8 @@ def markov_clustering(
     Args:
         x (str, pd.DataFrame): Distance matrix
         distance (str): Metric used to obtain distances
+        p_values (str, pd.DataFrame, optional): Cotransition p-values, can be used to filter reliable distances. Default to None
+        threshold_p_values (float): Trust threshold for cotransition p-values. Default to 0.001
         path (str, optional): Path to download the modules. Defaults to None.
 
     Returns:
@@ -222,6 +233,9 @@ def markov_clustering(
         dfx[dfx < 0] = 0
         #np.fill_diagonal(dfx.values, 0)
         dfx = diagonal(dfx, 0)
+        if p_values is not None:
+            df_p = pp._input(p_values, test_binary = False)
+            x_mask = x_mask.mask(df_p > threshold_p_values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         dfx = diagonal(dfx, 1)
@@ -258,7 +272,9 @@ def markov_clustering(
 def label_propagation(
     x,                       
     distance,                
-    threshold,               
+    threshold,
+    p_values = None,
+    threshold_p_values = 0.001,                
     seed = None,             
     path = None,
     exclude_pairs = None
@@ -269,6 +285,8 @@ def label_propagation(
         x (str, pd.DataFrame): Distance matrix
         distance (str): Metric used to obtain distances
         threshold (int): Trust treshold to use for creating edges
+        p_values (str, pd.DataFrame, optional): Cotransition p-values, can be used to filter reliable distances. Default to None
+        threshold_p_values (float): Trust threshold for cotransition p-values. Default to 0.001
         seed (int, optional): Seeding for the random part of the label propagation algorithm. Defaults to None.
         path (str, optional): Path to download the modules. Defaults to None.
 
@@ -281,6 +299,9 @@ def label_propagation(
         x_mask = dfx.mask(dfx < threshold, 0)
         x_mask = diagonal(x_mask, 0)
         #np.fill_diagonal(x_mask.values, 0)
+        if p_values is not None:
+            df_p = pp._input(p_values, test_binary = False)
+            x_mask = x_mask.mask(df_p > threshold_p_values, 0)
     if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(np.nanmax(dfx.to_numpy()))
         x_mask = dfx.mask(dfx > threshold, 1)
