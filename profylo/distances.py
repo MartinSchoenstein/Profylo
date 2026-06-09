@@ -273,7 +273,7 @@ def pcs(n_job, tvx, tvy, confidence=1.5, penalty=0.6):
     if tvy is None:
         symetry = True
         tvy = tvx
-    task = [delayed(pcs_loop)(tvx, tvy, a, i, symetry, confidence, penalty) for a, i in enumerate(tvx)]
+    task = [delayed(pcs_loop)(tvx, tvy, a, i, symetry, confidence, penalty) for a, i in enumerate(tvx.index)]
     out = Parallel(n_job)(task)
     pcs_score = np.zeros((len(tvx.index), len(tvy.index)))
     for a, row in out:
