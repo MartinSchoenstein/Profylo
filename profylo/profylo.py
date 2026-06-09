@@ -19,7 +19,8 @@ def distance_profiles(
     consecutive = True,     
     tree = None,
     n_job = 1,            
-    path = None             
+    path = None,
+    path_p_values = None             
 ):
     """Main function of the library, allows access to 7 metrics for comparing phylogenetic profiles
 
@@ -35,6 +36,7 @@ def distance_profiles(
         tree (str, optional): Newick tree to order profils for PCS or Cotransition score. Defaults to None.
         n_job (int, optionnal): Maximum number of running jobs, if -1 --> tries to use all CPUs. Defaults to 1
         path (str, optional): Path to download distance dataframe. Defaults to None.
+        path_p_values (str, optional): Path to download p_values dataframe if method is cotransition. Defaults to None
 
     Returns:
         pd.DataFrame: Returns a distance matrix in a dataframe
@@ -102,10 +104,13 @@ def distance_profiles(
         result = dst.SVD_phy(dfx, truncation)
     if path is not None:
         if method == "cotransition" or method == "Cotransition":
-            p_value.to_csv(path, index = True)
+            p_value.to_csv(path_p_values, index = True)
         result.to_csv(path, index=True),
     print("Done.")
-    return result
+    if method == "cotransition" or method == "Cotransition":
+        return result, p_value
+    else:
+        return result
 
 def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None, exclude_pairs=None):
     pairs_to_exclude = None
