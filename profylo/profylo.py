@@ -154,6 +154,7 @@ def parse_args():
     distance_parser.add_argument('-tr', '--truncation', type=float, default=0.5, help='Optionnal - SVD_phy parameter: truncation')  
     distance_parser.add_argument('-co', '--consecutive',  action="store_true", help='Optionnal -Cotransition parameter: consecutive')
     distance_parser.add_argument('-tree', '--tree', type=str, help='Required for cotransition and PCS - Path to the newick tree file')
+    distance_parser.add_argument('-j', '--jobs', type=int, default=1, help='Optionnal -Maximum number of running jobs, if -1 --> tries to use all CPUs. Defaults to 1')
 
     modules_parser = subparsers.add_parser('make_modules', help='Make modules from a distance matrix')
     modules_parser.add_argument('-x', '--matrix', type=str, required=True, help='Path to the distance matrix')  
