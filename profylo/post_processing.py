@@ -502,8 +502,6 @@ def tree_annotation(
     liste_tree = []
     node_obs = dict()
     for gene in x:
-
-        j+=1
         unique = False
         t = Tree(path_tree, format = 1,quoted_node_names=True)
         for leaf in TreeNode.iter_leaves(t):
