@@ -38,7 +38,7 @@ from profylo import pre_processing as pre
 #### 1) Generating similarity scores (cotransition scores here) between all profiles in a matrix:
 
 ```python
-from profylo import Profylo as pro
+from profylo import profylo as pro
 
 pro.distance_profiles(x = "example/profiles.csv",  tree = "example/tree.nwk", method = "cotransition", consecutive = False, path = "example/cotransition_similarity.csv")
 ```
