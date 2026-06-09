@@ -5,79 +5,91 @@ from scipy import stats
 from sklearn.metrics import mutual_info_score
 from scipy.stats import fisher_exact
 import warnings
+from joblib import delayed
+from joblib import Parallel
 warnings.filterwarnings('ignore')
 
 
-def jaccard(dfx, dfy = None):
+def jaccard_loop(dfx, dfy, a, i, symetry):
+    query = dfx.loc[i]
+    row = np.zeros(len(dfy.index))
+    for b,j in enumerate(dfy.index):
+        if symetry and b<a:
+            continue
+        row[b] = distance.jaccard(query, dfy.loc[j])
+    return a, row
+
+def jaccard(n_job, dfx, dfy = None):
     symetry = False
     if dfy is None:
         symetry = True
         dfy = dfx
+    task = [delayed(jaccard_loop)(dfx, dfy, a, i, symetry) for a, i in enumerate(dfx.index)]
+    out = Parallel(n_job)(task)
     jaccard_distance = np.zeros((len(dfx.index), len(dfy.index)))
-    for a,i in enumerate(dfx.index): # Éviter les doublons si symétrique
-        query = dfx.loc[i]
-        for b,j in enumerate(dfy.index):
-            if symetry and b<a:
-                continue
-            score_temp = distance.jaccard(query, dfy.loc[j])
-            jaccard_distance[a, b] = score_temp
+    for a, row in out:
+        for b in range(a, len(dfx.index)):
+            jaccard_distance[a, b] = row[b]
             if symetry:
-                jaccard_distance[b, a] = score_temp
-    index=dfx.index 
-    columns=dfy.index
-    jaccard_distance = pd.DataFrame(jaccard_distance, index=index, columns=columns)
-    jaccard_distance = jaccard_distance.fillna(1)
-    return jaccard_distance
+                jaccard_distance[b, a] = row[b]
+    df_jaccard = pd.DataFrame(jaccard_distance, index=dfx.index , columns=dfy.index).fillna(1)
+    return df_jaccard
 
 
-def hamming(dfx, dfy = None):
+def hamming_loop(dfx, dfy, a, i, symetry):
+    query = dfx.loc[i]
+    row = np.zeros(len(dfy.index))
+    for b,j in enumerate(dfy.index):
+        if symetry and b<a:
+            continue
+        row[b] = distance.hamming(query, dfy.loc[j])
+    return a, row
+
+def hamming(n_job, dfx, dfy = None):
     symetry = False
     if dfy is None:
         symetry = True
         dfy = dfx
+    task = [delayed(hamming_loop)(dfx, dfy, a, i, symetry) for a, i in enumerate(dfx.index)]
+    out = Parallel(n_job)(task)
     hamming_distance = np.zeros((len(dfx.index), len(dfy.index)))
-    for a,i in enumerate(dfx.index): # Éviter les doublons si symétrique
-        query = dfx.loc[i]
-        for b,j in enumerate(dfy.index):
-            if symetry and b<a:
-                continue
-            score_temp = distance.hamming(query, dfy.loc[j])
-            hamming_distance[a,b] = score_temp
-            if symetry: 
-                hamming_distance[b,a] = score_temp
-    index=dfx.index 
-    columns=dfy.index
-    hamming_distance = pd.DataFrame(hamming_distance, index=index, columns=columns)
-    hamming_distance = hamming_distance.fillna(1)
-    return hamming_distance
+    for a, row in out:
+        for b in range(a, len(dfx.index)):
+            hamming_distance[a, b] = row[b]
+            if symetry:
+                hamming_distance[b, a] = row[b]
+    df_hamming = pd.DataFrame(hamming_distance, index=dfx.index , columns=dfy.index).fillna(1)
+    return df_hamming
 
 
-def pearson(dfx, dfy = None):
+def pearson_loop(dfx, dfy, a, i, symetry):
+    query = dfx.loc[i]
+    row = np.zeros(len(dfy.index))
+    for b,j in enumerate(dfy.index):
+        if symetry and b<a:
+            continue
+        pearson_cor = stats.pearsonr(query, dfy.loc[j])
+        if not np.isnan(pearson_cor[0]):
+            row[b] = pearson_cor[0]
+        else:
+            row[b] = np.nan
+    return a, row
+
+def pearson(n_job, dfx, dfy = None):
     symetry = False
     if dfy is None:
+        symetry = True
         dfy = dfx
-        symetry=True
-    pearson_results = np.zeros((len(dfx.index), len(dfy.index)))
-    for a,i in enumerate(dfx.index): # Éviter les doublons si symétrique
-        query = dfx.loc[i]
-        for b,j in enumerate(dfy.index):
-            if symetry and b<a:
-                continue
-            pearson_correlation = stats.pearsonr(query, dfy.loc[j])
-            if not np.isnan(pearson_correlation[0]):
-                score_temp = pearson_correlation[0]
-                pearson_results[a, b] = score_temp
-                if symetry:
-                    pearson_results[b, a] = score_temp
-            else:
-                pearson_results[a, b] = np.nan
-                if symetry:
-                    pearson_results[b, a] = np.nan
-    index=dfx.index 
-    columns=dfy.index
-    pearson_results = pd.DataFrame(pearson_results, index=index, columns=columns)
-    pearson_results = pearson_results.fillna(0)
-    return pearson_results
+    task = [delayed(pearson_loop)(dfx, dfy, a, i, symetry) for a, i in enumerate(dfx.index)]
+    out = Parallel(n_job)(task)
+    pearson_distance = np.zeros((len(dfx.index), len(dfy.index)))
+    for a, row in out:
+        for b in range(a, len(dfx.index)):
+            pearson_distance[a, b] = row[b]
+            if symetry:
+                pearson_distance[b, a] = row[b]
+    df_jaccard = pd.DataFrame(pearson_distance, index=dfx.index , columns=dfy.index).fillna(0)
+    return df_jaccard
 
 
 def mi_ori(dfx, dfy = None):
@@ -150,112 +162,127 @@ def mi(dfx, dfy = None):
     return mi_distance
 
 
-def cotransition(tvx, tvy = None, consecutive = True):
+def cotransition_loop(tvx, tvy, a, i, symetry, consecutive):
+    query = tvx.loc[i]
+    row = np.zeros(len(tvy.index))
+    row_p_value = np.zeros(len(tvy.index))
+    for b,j in enumerate(tvy.index):
+        if symetry and b<a:
+            continue
+        
+        t1 = 0
+        t2 = 0
+        c = 0
+        d = 0
+        k = 0
+        v1 = np.array(tvx.loc[i])
+        v2 = np.array(tvy.loc[j])
+        if consecutive == True :
+            t1 = np.count_nonzero(v1)
+            t2 = np.count_nonzero(v2)
+            nonz = (v1 != 0) & (v2 != 0)
+            c = np.sum(v1[nonz]==v2[nonz])
+            d = np.count_nonzero(v1[nonz]-v2[nonz])
+            k = c - d
+        elif consecutive ==  False:
+            v1d = np.insert(v1, 0, [0])
+            v1dd = np.insert(v1d, 0, [0])
+            v2d = np.insert(v2, 0, [0])
+            v2dd = np.insert(v2d, 0, [0])
+            v1 = np.insert(v1, len(v1), [0, 0])
+            v1d = np.insert(v1d, len(v1d), [0])
+            v2 = np.insert(v2, len(v2), [0, 0])
+            v2d = np.insert(v2d, len(v2d), [0])
+            t1 = np.count_nonzero(v1) - np.sum((v1 != 0) & (v1d != 0)) + np.sum((v1 !=0) & (v1d != 0) & (v1dd != 0))
+            t2 = np.count_nonzero(v2) - np.sum((v2 != 0) & (v2d != 0)) + np.sum((v2 !=0) & (v2d != 0) & (v2dd != 0))
+            nonza = (v1 != 0) & (v2 != 0) & (v1d  == 0) & (v2d == 0)
+            nonzb1 = (v1 != 0) & (v2 != 0) & (v1d  == 0)
+            nonzb2 = (v1 != 0) & (v2 != 0) & (v2d  == 0)
+            nonzc1 = ((v1 != 0) & (v2 != 0)) & ((v1d  != 0) & (v1dd  != 0))
+            nonzc2 = ((v1 != 0) & (v2 != 0)) & ((v2d  != 0) & (v2dd  != 0))
+            nonz = nonza | (nonzc1 & nonzc2) | (nonzb1 & nonzb2) | (nonzb1 & nonzc2) | (nonzb2 & nonzc1)
+            c = np.sum(v1[nonz]==v2[nonz])
+            d = np.count_nonzero(v1[nonz]-v2[nonz])
+            k = c - d
+        if t1 == 0 and t2 == 0:
+            row[b] = None
+        else:
+            row[b] = k / (t1 + t2 - abs(k))
+            #tableau de contingence:
+        contingency_table = [[abs(k),t1-abs(k)], [t2-abs(k),(len(tvx.columns))-t1-t2+abs(k)]]
+        score = fisher_exact(contingency_table, alternative="greater")
+        row_p_value[b] = score.p_value
+    return a, row, row_p_value
+
+def cotransition(n_job, tvx, tvy = None, consecutive = True):
     symetry = False
     if tvy is None:
         symetry = True
         tvy = tvx
+    task = [delayed(cotransition_loop)(tvx, tvy, a, i, symetry, consecutive) for a,i in enumerate(tvx.index)]
+    out = Parallel(n_job)(task)
     cotransition_scores = np.zeros((len(tvx.index), len(tvy.index)))
     p_values = np.zeros((len(tvx.index), len(tvy.index)))
-    for a,i in enumerate(tvx.index):
-        for b,j in enumerate(tvy.index):
-            if symetry and b<a:
-                continue
-            t1 = 0
-            t2 = 0
-            c = 0
-            d = 0
-            k = 0
-            v1 = np.array(tvx.loc[i])
-            v2 = np.array(tvy.loc[j])
-            if consecutive == True :
-                t1 = np.count_nonzero(v1)
-                t2 = np.count_nonzero(v2)
-                nonz = (v1 != 0) & (v2 != 0)
-                c = np.sum(v1[nonz]==v2[nonz])
-                d = np.count_nonzero(v1[nonz]-v2[nonz])
-                k = c - d
-            elif consecutive ==  False:
-                v1d = np.insert(v1, 0, [0])
-                v1dd = np.insert(v1d, 0, [0])
-                v2d = np.insert(v2, 0, [0])
-                v2dd = np.insert(v2d, 0, [0])
-                v1 = np.insert(v1, len(v1), [0, 0])
-                v1d = np.insert(v1d, len(v1d), [0])
-                v2 = np.insert(v2, len(v2), [0, 0])
-                v2d = np.insert(v2d, len(v2d), [0])
-                t1 = np.count_nonzero(v1) - np.sum((v1 != 0) & (v1d != 0)) + np.sum((v1 !=0) & (v1d != 0) & (v1dd != 0))
-                t2 = np.count_nonzero(v2) - np.sum((v2 != 0) & (v2d != 0)) + np.sum((v2 !=0) & (v2d != 0) & (v2dd != 0))
-                nonza = (v1 != 0) & (v2 != 0) & (v1d  == 0) & (v2d == 0)
-                nonzb1 = (v1 != 0) & (v2 != 0) & (v1d  == 0)
-                nonzb2 = (v1 != 0) & (v2 != 0) & (v2d  == 0)
-                nonzc1 = ((v1 != 0) & (v2 != 0)) & ((v1d  != 0) & (v1dd  != 0))
-                nonzc2 = ((v1 != 0) & (v2 != 0)) & ((v2d  != 0) & (v2dd  != 0))
-                nonz = nonza | (nonzc1 & nonzc2) | (nonzb1 & nonzb2) | (nonzb1 & nonzc2) | (nonzb2 & nonzc1)
-                c = np.sum(v1[nonz]==v2[nonz])
-                d = np.count_nonzero(v1[nonz]-v2[nonz])
-                k = c - d
-            if t1 == 0 and t2 == 0:
-                cotransition_scores[a, b] = None
-                if symetry:
-                    cotransition_scores[b, a] = None
-            else:
-                score_temp = k / (t1 + t2 - abs(k))
-                cotransition_scores[a, b] = score_temp
-                if symetry:
-                    cotransition_scores[b, a] = score_temp
-
-                #tableau de contingence:
-            contingency_table = [[abs(k),t1-abs(k)], [t2-abs(k),(len(tvx.columns))-t1-t2+abs(k)]]
-            score = fisher_exact(contingency_table, alternative="greater")
-            p_values[a, b] = score.pvalue
+    for a, row, row_p_value in out:
+        for b in range(a, len(tvx.index)):
+            cotransition_scores[a, b] = row[b]
             if symetry:
-                p_values[b, a] = score.pvalue
-    cotransition_scores = pd.DataFrame(cotransition_scores, index=tvx.index, columns=tvy.index)
-    cotransition_scores = cotransition_scores.fillna(0)
-    p_values = pd.DataFrame(p_values, index=tvx.index, columns=tvy.index)
-    return cotransition_scores, p_values
+                cotransition_scores[b, a] = row[b]
+            p_values[a, b] = row_p_value[b]
+            if symetry:
+                p_values[b, a] = row_p_value[b]
+    df_cotransition = pd.DataFrame(cotransition_scores, index=tvx.index , columns=tvy.index).fillna(0)
+    df_p_values = pd.DataFrame(p_values, index=tvx.index , columns=tvy.index)
+    return df_cotransition, df_p_values
 
 
-def pcs(tvx, tvy, confidence=1.5, penalty=0.6):
+def pcs_loop(tvx, tvy, a, i, symetry, confidence, penalty):
+    query = tvx.loc[i]
+    row = np.zeros(len(tvy.index))
+    for b,j in enumerate(tvy.index):
+        if symetry and b<a:
+            continue
+        match_1 = 0
+        mismatch_1 = 0
+        match_2 = 0
+        mismatch_2 = 0
+        tv1 = np.array(tvx.loc[i])
+        tv2 = np.array(tvy.loc[j])
+        tv1a = np.insert(tv1[:-1], 0, 2) #acceder à la valeur précédente
+        tv1b = np.insert(tv1[1:], len(tv1) -1 , 2)  #acceder à la valeur suivante
+        tv2a = np.insert(tv2[:-1], 0, 2) 
+        tv2b = np.insert(tv2[1:], len(tv2) -1 , 2)
+        nonz1 = (tv1 != tv2) & (tv1 != 0)  #True si transition(s) non partagée(s) chez 1
+        nonz2 = (tv1 != tv2) & (tv2 != 0)  #True si transition(s) non partagée(s) chez 2
+        nonz12= nonz1 & nonz2              #True si transitions différentes chez les deux
+        nonzp = (tv1 == tv2) & (tv1 != 0)  #True si transitions partagées
+        double_match = (tv1a[nonzp] == 0) & (tv1b[nonzp] == 0) & (tv2a[nonzp] == 0) & (tv2b[nonzp] == 0)
+        match_2 = sum(double_match)
+        match_1 = sum(nonzp) - match_2
+        double_mismatch = sum((tv1a[nonz1] == 0) & (tv1b[nonz1] == 0)) + sum((tv2a[nonz2] == 0) & (tv2b[nonz2] == 0)) - sum((tv1a[nonz12] == 0) & (tv1b[nonz12] == 0) & (tv2a[nonz12] == 0) & (tv2b[nonz12] == 0))
+        mismatch_2 = double_mismatch
+        mismatch_1 = sum(nonz1) + sum(nonz2) - sum(nonz12) - mismatch_2
+        score_temp = (
+            (match_1) + (match_2 * confidence) - penalty * (mismatch_1 + mismatch_2 * confidence)
+        )
+        row[b] = score_temp
+    return a, row
+
+def pcs(n_job, tvx, tvy, confidence=1.5, penalty=0.6):
     symetry = False
     if tvy is None:
         symetry = True
         tvy = tvx
-    pcs_scores = np.zeros((len(tvx.index), len(tvy.index)))
-    for a,i in enumerate(tvx.index):
-        for b,j in enumerate(tvy.index):
-            if symetry and b<a:
-                continue
-            match_1 = 0
-            mismatch_1 = 0
-            match_2 = 0
-            mismatch_2 = 0
-            tv1 = np.array(tvx.loc[i])
-            tv2 = np.array(tvy.loc[j])
-            tv1a = np.insert(tv1[:-1], 0, 2) #acceder à la valeur précédente
-            tv1b = np.insert(tv1[1:], len(tv1) -1 , 2)  #acceder à la valeur suivante
-            tv2a = np.insert(tv2[:-1], 0, 2) 
-            tv2b = np.insert(tv2[1:], len(tv2) -1 , 2)
-            nonz1 = (tv1 != tv2) & (tv1 != 0)  #True si transition(s) non partagée(s) chez 1
-            nonz2 = (tv1 != tv2) & (tv2 != 0)  #True si transition(s) non partagée(s) chez 2
-            nonz12= nonz1 & nonz2              #True si transitions différentes chez les deux
-            nonzp = (tv1 == tv2) & (tv1 != 0)  #True si transitions partagées
-            double_match = (tv1a[nonzp] == 0) & (tv1b[nonzp] == 0) & (tv2a[nonzp] == 0) & (tv2b[nonzp] == 0)
-            match_2 = sum(double_match)
-            match_1 = sum(nonzp) - match_2
-            double_mismatch = sum((tv1a[nonz1] == 0) & (tv1b[nonz1] == 0)) + sum((tv2a[nonz2] == 0) & (tv2b[nonz2] == 0)) - sum((tv1a[nonz12] == 0) & (tv1b[nonz12] == 0) & (tv2a[nonz12] == 0) & (tv2b[nonz12] == 0))
-            mismatch_2 = double_mismatch
-            mismatch_1 = sum(nonz1) + sum(nonz2) - sum(nonz12) - mismatch_2
-            score_temp = (
-                (match_1) + (match_2 * confidence) - penalty * (mismatch_1 + mismatch_2 * confidence)
-            )
-            pcs_scores[a, b] = score_temp
+    task = [delayed(pcs_loop)(tvx, tvy, a, i, symetry, confidence, penalty) for a, i in enumerate(tvx)]
+    out = Parallel(n_job)(task)
+    pcs_score = np.zeros((len(tvx.index), len(tvy.index)))
+    for a, row in out:
+        for b in range(a, len(tvx.index)):
+            pcs_score[a, b] = row[b]
             if symetry:
-                pcs_scores[b, a] = score_temp
-    pcs_scores = pd.DataFrame(pcs_scores, index=tvx.index, columns=tvy.index)
-    pcs_scores = pcs_scores.fillna(0)
-    return pcs_scores
+                pcs_score[b, a] = row[b]
+    df_pcs = pd.DataFrame(pcs_score, index=tvx.index , columns=tvy.index).fillna(0)
+    return df_pcs
 
 
 def SVD_phy(dfx, truncation = 0.5): 

@@ -17,7 +17,8 @@ def distance_profiles(
     penalty=0.6,            
     truncation= 0.5,        
     consecutive = True,     
-    tree = None,            
+    tree = None,
+    n_job = 1,            
     path = None             
 ):
     """Main function of the library, allows access to 7 metrics for comparing phylogenetic profiles
@@ -32,6 +33,7 @@ def distance_profiles(
         truncation (float, optional): SVD-phy parameter, influence the data reduction. Defaults to 0.5.
         consecutive (bool, optional): Cotransition score parameter, when consecuive=False: only counts one transition in 2 directly consecutive ones. Defaults to True.
         tree (str, optional): Newick tree to order profils for PCS or Cotransition score. Defaults to None.
+        n_job (int, optionnal): Maximum number of running jobs, if -1 --> tries to use all CPUs. Defaults to 1
         path (str, optional): Path to download distance dataframe. Defaults to None.
 
     Returns:
@@ -61,11 +63,11 @@ def distance_profiles(
         print("Profiles were not binary, to_binary() was applied with 0.5 for threshold")
     print("Running...")
     if method == "Jaccard" or method == "jaccard":
-        result = dst.jaccard(dfx, dfy)
+        result = dst.jaccard(n_job, dfx, dfy)
     if method == "Hamming" or method == "hamming":
-        result = dst.hamming(dfx, dfy) 
+        result = dst.hamming(n_job, dfx, dfy) 
     if method == "Pearson" or method == "pearson":
-        result = dst.pearson(dfx, dfy)
+        result = dst.pearson(n_job, dfx, dfy)
     if method == "MI" or method == "mi":
         result = dst.mi(dfx, dfy)
     if method == "cotransition" or method == "Cotransition":
@@ -81,7 +83,7 @@ def distance_profiles(
         else:
             tvx = dfx
             tvy = None
-        result, p_value = dst.cotransition(tvx, tvy, consecutive)
+        result, p_value = dst.cotransition(n_job, tvx, tvy, consecutive)
     if method == "pcs" or method == "PCS":
         if type == "matrix":
             ordered_dfx = pp.order_by_tree(dfx, tree)
@@ -95,7 +97,7 @@ def distance_profiles(
         else:
             tvx = dfx
             tvy = None
-        result = dst.pcs(tvx, tvy, confidence, penalty)
+        result = dst.pcs(n_job, tvx, tvy, confidence, penalty)
     if method == "svd_phy" or method == "SVD_phy":
         result = dst.SVD_phy(dfx, truncation)
     if path is not None:
