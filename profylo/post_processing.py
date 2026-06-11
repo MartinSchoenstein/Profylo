@@ -406,7 +406,8 @@ def profils_heatmap(
     x,                       
     selection = None,        
     tree = None,             
-    clades = None,           
+    clades = None,
+    species = None,           
     order = False,         
     path = None              
 ):
@@ -416,7 +417,8 @@ def profils_heatmap(
         x (str, pd.DataFrame): Profile matrix
         selection (list, optional): Genes selection to represent. Defaults to None.
         tree (str, optional): Newick tree to order profils, necessary if order = True. Defaults to None.
-        clades (list, optional): Clades to highlight on heatmaps. Defaults to None.
+        clades (list, dictionary, optional): Clades to highlight on heatmaps ; If it's a dictionary, the values ​​will be used for the legend. Defaults to None.
+        species (list, dictionary, optional): Species to highlight on heatmaps ; If it's a dictionary, the values ​​will be used for the legend. Defaults to None.
         order (bool, optional): True if profils need to be ordered -->  need a Newick tree. Defaults to False.
         path (str, optional): Path to download the heatmap. Defaults to None.
     """
@@ -434,32 +436,60 @@ def profils_heatmap(
     profils_selection = profils_selection.fillna(0)
     profils_selection = profils_selection.apply(pd.to_numeric)
     tree = Tree(tree, format = 1, quoted_node_names=True)
-    if clades is not None:
+    if clades is not None or species is not None:
+        if clades is not None:
+            if isinstance(clades, list):
+                clades = {c: c for c in clades}
+            elif not isinstance(clades, dict):
+                raise TypeError("clades must be a list or a dictionary")
+        if species is not None:
+            if isinstance(species, list):
+                species_map = {s: s for s in species}
+            elif isinstance(species, dict):
+                species_map = species
+            else:
+                raise TypeError("species must be a list or a dictionary")
         new_col = []
         for c in profils_selection.columns:
             add = False
-            leaf_node = tree&c 
+            leaf_node = tree & c
             ancestor = leaf_node.get_ancestors()
             phylogenie = [n.name for n in ancestor if n.name]
-            for clade in phylogenie:
-                if str(clade) in clades:
-                    if add == False:
-                        new_col.append(clade)
-                        add = True
-            if add == False:
-                new_col.append("other")
+            if species is not None:
+                if c in species_map.keys():
+                    new_col.append("species")
+                    add = True
+            if clades is not None and add == False:
+                for clade in phylogenie:
+                    if clade in clades:
+                        if not add:
+                            new_col.append(clades[clade])
+                            add = True
+            if not add:
+                new_col.append("Other")
         df_clades = pd.DataFrame([new_col], columns=profils_selection.columns, index = ["clade"])
         cate = df_clades.loc["clade"]
         unique_categories = cate.unique()
-        palette = dict(zip(unique_categories, sns.color_palette("Paired", len(unique_categories))))
+        fixed_colors = {"species" : "black", "Other" : "linen"}
+        remaining = [c for c in unique_categories if c not in fixed_colors]
+        auto_palette = sns.color_palette("Paired", len(remaining))
+        auto_palette = dict(zip(remaining, auto_palette))
+        palette = {**auto_palette, **fixed_colors}
         col_colors = cate.map(palette)
         handles = [mpatches.Patch(color=color, label=category) for category, color in palette.items()]
     plt.figure(figsize=(12, 6))
-    if clades is not None:
-        sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, col_colors=col_colors, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1))
-        plt.legend(handles=handles, title="Clades", bbox_to_anchor=(0.5, 1.05), loc='lower right', ncol = 3)
-    else:
-        sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1))
+    g = sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, col_colors=col_colors if clades is not None or species is not None else None, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1), figsize=(12,8))
+    g.ax_col_colors.set_yticks([])
+    g.ax_col_colors.set_yticklabels([])
+    plt.legend(handles=handles, title="Annotation", bbox_to_anchor=(1, 1.2), loc='upper right', ncol=3)
+    if species is not None:
+        ax = g.ax_col_colors
+        cols = profils_selection.columns
+        fig = g.figure
+        fig.canvas.draw()
+        for i, col in enumerate(cols):
+            if col in species_map:
+                ax.text(i + 0.5, 1.25, species_map[col], rotation=90, ha="center", va="bottom", fontsize=8, transform=ax.get_xaxis_transform(), clip_on=False)
     if path is not None:
         plt.savefig(path, bbox_inches='tight')
     plt.show()
