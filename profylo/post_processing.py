@@ -466,14 +466,17 @@ def profils_heatmap(
         df_clades = pd.DataFrame([new_col], columns=profils_selection.columns, index = ["clade"])
         cate = df_clades.loc["clade"]
         unique_categories = cate.unique()
-        fixed_colors = {"species" : "black", "Other" : "linen"}
+        if species is not None:
+            fixed_colors = {"species" : "black", "Other" : "linen"}
+        else:
+            fixed_colors = {"Other" : "linen"}
         remaining = [c for c in unique_categories if c not in fixed_colors]
         auto_palette = sns.color_palette("Paired", len(remaining))
         auto_palette = dict(zip(remaining, auto_palette))
         palette = {**auto_palette, **fixed_colors}
         col_colors = cate.map(palette)
         handles = [mpatches.Patch(color=color, label=category) for category, color in palette.items()]
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(12, 10))
     g = sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, col_colors=col_colors if clades is not None or species is not None else None, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1), figsize=(12,8))
     g.ax_col_colors.set_yticks([])
     g.ax_col_colors.set_yticklabels([])
