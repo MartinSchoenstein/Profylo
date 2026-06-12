@@ -187,15 +187,11 @@ def graph_modules(
     if distance in ["pcs", "PCS"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         x_mask = dfx.mask(dfx < threshold, 0)
-        max = x_mask.max()
-        x_mask = x_mask/max
         #np.fill_diagonal(x_mask.values, 0)
         x_mask = diagonal(x_mask, 0)
     G = nx.from_pandas_adjacency(x_mask)
-
     if exclude_pairs:
         G.remove_edges_from(exclude_pairs)
-
     G.remove_edges_from([(u, v) for u, v, d in G.edges(data=True) if d['weight'] == 0])
     modules_recap = []
     for c in sorted(nx.connected_components(G), key=len, reverse=True):
@@ -244,8 +240,8 @@ def markov_clustering(
     if distance in ["pcs", "PCS"]:
         dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
         dfx[dfx < 0] = 0
-        max = np.nanmax(dfx.to_numpy())
-        dfx = dfx/max
+        #max = np.nanmax(dfx.to_numpy())
+        #dfx = dfx/max
         #np.fill_diagonal(dfx.values, 0)
         dfx = diagonal(dfx, 0)
     G = nx.from_pandas_adjacency(dfx)
