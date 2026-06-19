@@ -67,30 +67,40 @@ def diagonal(d, v):
 
 
 def hierarchical_dendrogram(
-    x,                       
-    method,                  
+    x,
+    distance,                       
+    method = 'ward',                  
     path = None              
 ):
     """Function to obtain the dendrogram linked to hierarchical clustering from distances between profiles
 
     Args:
         x (str, pd.DataFrame): Distance matrix
+        distance (str): Metric used to obtain distances
         method (str): Method to use for hierarchical clustering : "ward", "average", "weighted", "complete"
         path (str, optional): Path to download the dendrogram plot. Defaults to None.
     """
     dfx = pp._input(x, test_binary = False)
     dfx = dfx.replace([np.inf, -np.inf], np.nan).fillna(0)
-    dfx[dfx < 0] = 0
-    dfx = 1 - dfx
-    dfx = diagonal(dfx, 0)
-    #np.fill_diagonal(dfx.values, 0)
+    if distance in ["cotransition", "pearson", "mi", "Cotransition", "Pearson", "MI"] :
+        dfx = 1- dfx
+        dfx = diagonal(dfx, 0)
+    if distance in ["svd_phy", "jaccard", "hamming", "SVD_phy", "Jaccard", "Hamming"]:
+        dfx = diagonal(dfx, 0)
+    if distance in ["pcs", "PCS"]:
+        raise ValueError("PCS distances are not supported for this task yet (dendrogram)")
+        max = dfx.max()
+        dfx = dfx/max
+        dfx = 1- dfx
+        dfx = diagonal(dfx, 0)
     dfx = squareform(dfx)
     L = linkage(dfx, method)
     plt.figure(figsize=(25, 10))
     dendrogram(L)
     plt.show
     if path is not None:
-        plt.savefig(path) 
+        plt.savefig(path)
+    return L 
 
 
 def hierarchical_clustering(
@@ -124,6 +134,7 @@ def hierarchical_clustering(
         #np.fill_diagonal(dfx.values, 0)
         dfx = diagonal(dfx, 0)
     if distance in ["pcs", "PCS"]:
+        raise ValueError("PCS distances are not supported for this task yet (dendrogram)")
         max = dfx.max()
         dfx = dfx/max
         dfx = 1- dfx
@@ -360,21 +371,22 @@ def go_enrichment(
     df = pd.DataFrame(columns = ["length"]+ [y+f'_{i}'  for i in range(1,6) for y  in ["GO_ID","GO_Term","FDR_BH"] ])
 
     for i, module in enumerate(x):
-        goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
-        results = goeaobj.run_study(module)
-        results = sorted(results, key = lambda x: x.p_fdr_bh)[:5]
-        data = {}
-        data["length"] = len(module)
-        for j, res in enumerate(results):
-            data[f"GO_ID_{j+1}"] = res.GO
-            data[f"GO_Term_{j+1}"] = res.name
-            data[f"FDR_BH_{j+1}"] = res.p_fdr_bh
+        if len(module) > 1:
+            goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
+            results = goeaobj.run_study(module)
+            results = sorted(results, key = lambda x: x.p_fdr_bh)[:5]
+            data = {}
+            data["length"] = len(module)
+            for j, res in enumerate(results):
+                data[f"GO_ID_{j+1}"] = res.GO
+                data[f"GO_Term_{j+1}"] = res.name
+                data[f"FDR_BH_{j+1}"] = res.p_fdr_bh
 
 
-        df.loc[len(df)] = data
-        if complete_results is True:
-            path2 = path + "/" + str(i) + ".tsv"
-            goeaobj.wr_tsv(path2, results)
+            df.loc[len(df)] = data
+            if complete_results is True:
+                path2 = path + "/" + str(i) + ".tsv"
+                goeaobj.wr_tsv(path2, results)
     if path is not None and complete_results is True:
         path1 = path + "/resume_results.csv"
         df.to_csv(path1, index = False)
@@ -385,18 +397,22 @@ def go_enrichment(
 
 def plot_modules(
         modules,
-        profiles,
-        tree = None,
-        output_folder= "./"
-):
-    profils = pp._input(profiles, test_binary = False)
+        x,                       
+        tree = None,             
+        clades = None,
+        species = None,           
+        order = False,
+        distances_matrix = None,
+        distance = None,         
+        dir_path = None   
+    ):
     modules = _input_modules(modules)
-    for i, module in enumerate(modules):
-        if tree:
-            order=True
+    for i, selection in enumerate(modules):
+        if dir_path is not None:
+            path = dir_path + "/heatmap_" + str(i) + ".png"
         else:
-            order=False
-        profils_heatmap(profils,selection=module,tree=tree, order=order,path=f"{output_folder}/{i}.png")
+            path = None
+        profils_heatmap(x, selection, tree, clades, species, order, distances_matrix, distance, path)
 
 def profils_heatmap(
     x,                       
@@ -404,7 +420,9 @@ def profils_heatmap(
     tree = None,             
     clades = None,
     species = None,           
-    order = False,         
+    order = False,
+    distances_matrix = None,
+    distance = None,         
     path = None              
 ):
     """Function to represent profiles (presence/absence) on a heatmap
@@ -423,7 +441,7 @@ def profils_heatmap(
     if clades is not None and tree == None:
         raise ValueError("Need tree to obtain phylogenetic informations")
     profils = pp._input(x, test_binary = False)
-    if order :
+    if order or clades is not None or species is not None:
         profils = pp.order_by_tree(profils, tree)
     if selection is None:
         profils_selection = profils
@@ -476,8 +494,17 @@ def profils_heatmap(
         palette = {**auto_palette, **fixed_colors}
         col_colors = cate.map(palette)
         handles = [mpatches.Patch(color=color, label=category) for category, color in palette.items()]
-    plt.figure(figsize=(12, 10))
-    g = sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, col_colors=col_colors if clades is not None or species is not None else None, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1), figsize=(12,8))
+    plt.figure(figsize=(12, 14))
+    if distances_matrix is not None:
+        if distance == None:
+            raise ValueError("Need the metric used to obtain the distance matrix")
+        dfx =  pp._input(distances_matrix, test_binary = False)
+        if selection is not None:
+            dfx = dfx.loc[selection, selection]
+        L = hierarchical_dendrogram(x = dfx, distance = distance)
+        g = sns.clustermap(profils_selection, cmap="coolwarm", row_linkage = L, col_cluster=False, col_colors=col_colors if clades is not None or species is not None else None, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.1, .1), figsize=(12,8))
+    else:
+        g = sns.clustermap(profils_selection, cmap="coolwarm", row_cluster=False, col_cluster=False, col_colors=col_colors if clades is not None or species is not None else None, xticklabels=False, cbar_pos=None, dendrogram_ratio=(.01, .1), figsize=(12,8))
     g.ax_col_colors.set_yticks([])
     g.ax_col_colors.set_yticklabels([])
     plt.legend(handles=handles, title="Annotation", bbox_to_anchor=(1, 1.2), loc='upper right', ncol=3)
