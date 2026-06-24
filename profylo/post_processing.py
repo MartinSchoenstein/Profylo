@@ -375,7 +375,7 @@ def go_enrichment(
             goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
             results = goeaobj.run_study(module)
             results = [r for r in results if r.enrichment == "e"]
-            results = [r for r in results if r.p_fdr_bh > 0.05]
+            results = [r for r in results if r.p_fdr_bh < 0.05]
             results = sorted(results, key = lambda x: x.p_fdr_bh)
             results_short = sorted(results, key = lambda x: x.p_fdr_bh)[:5]
             data = {}
