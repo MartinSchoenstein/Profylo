@@ -371,13 +371,16 @@ def go_enrichment(
     df = pd.DataFrame(columns = ["length"]+ [y+f'_{i}'  for i in range(1,6) for y  in ["GO_ID","GO_Term","FDR_BH"] ])
 
     for i, module in enumerate(x):
-        if len(module) > 1:
+        if len(module) > 2:
             goeaobj = GOEnrichmentStudy(genes_fond, gene2go, godag, propagate_counts=True, alpha=0.05, methods=['fdr_bh'])
             results = goeaobj.run_study(module)
-            results = sorted(results, key = lambda x: x.p_fdr_bh)[:5]
+            results = [r for r in results if r.enrichment == "e"]
+            results = [r for r in results if r.p_fdr_bh > 0.05]
+            results = sorted(results, key = lambda x: x.p_fdr_bh)
+            results_short = sorted(results, key = lambda x: x.p_fdr_bh)[:5]
             data = {}
             data["length"] = len(module)
-            for j, res in enumerate(results):
+            for j, res in enumerate(results_short):
                 data[f"GO_ID_{j+1}"] = res.GO
                 data[f"GO_Term_{j+1}"] = res.name
                 data[f"FDR_BH_{j+1}"] = res.p_fdr_bh
