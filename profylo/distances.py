@@ -299,5 +299,5 @@ def SVD_phy(dfx, truncation = 0.5):
         for j in range(0, len(U_truncated)):
             SVDphy_distance[i][j] = np.sqrt(np.sum((subset_U[i] - U_truncated[j])**2))
     SVDphy_distance = pd.DataFrame(SVDphy_distance, index=row_labels, columns=col_labels)
-    SVDphy_distance = SVDphy_distance.fillna(SVDphy_distance.to_numpy().nanmax())
+    SVDphy_distance = SVDphy_distance.fillna(np.nanmax(SVDphy_distance.to_numpy()))
     return SVDphy_distance
