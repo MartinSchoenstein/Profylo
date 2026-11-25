@@ -85,7 +85,7 @@ def distance_profiles(
         else:
             tvx = dfx
             tvy = None
-        result = dst.cotransition(tvx, tvy, consecutive)
+        result = dst.cotransition(n_job, tvx, tvy, consecutive)
     if method == "pcs" or method == "PCS":
         if type == "matrix":
             ordered_dfx = pp.order_by_tree(dfx, tree)
