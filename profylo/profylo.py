@@ -85,7 +85,7 @@ def distance_profiles(
         else:
             tvx = dfx
             tvy = None
-        result, p_value = dst.cotransition(n_job, tvx, tvy, consecutive)
+        result = dst.cotransition(tvx, tvy, consecutive)
     if method == "pcs" or method == "PCS":
         if type == "matrix":
             ordered_dfx = pp.order_by_tree(dfx, tree)
@@ -103,14 +103,9 @@ def distance_profiles(
     if method == "svd_phy" or method == "SVD_phy":
         result = dst.SVD_phy(dfx, truncation)
     if path is not None:
-        if method == "cotransition" or method == "Cotransition":
-            p_value.to_csv(path_p_values, index = True)
         result.to_csv(path, index=True),
     print("Done.")
-    if method == "cotransition" or method == "Cotransition":
-        return result, p_value
-    else:
-        return result
+    return result
 
 def make_modules(x, clustering, method = None, criterion = None, threshold = None, distance = None, seed = None, path = None, exclude_pairs=None):
     pairs_to_exclude = None
