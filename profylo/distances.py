@@ -208,10 +208,13 @@ def cotransition_loop(tvx, tvy, a, i, symetry, consecutive):
             row[b] = None
         else:
             row[b] = k / (t1 + t2 - abs(k))
-            #tableau de contingence:
-        contingency_table = [[abs(k),t1-abs(k)], [t2-abs(k),(len(tvx.columns))-t1-t2+abs(k)]]
-        score = fisher_exact(contingency_table, alternative="greater")
-        row_p_value[b] = score.pvalue
+        #tableau de contingence:
+        try:
+            contingency_table = [[abs(k),t1-abs(k)], [t2-abs(k),(len(tvx.columns))-t1-t2+abs(k)]]
+            score = fisher_exact(contingency_table, alternative="greater")
+            row_p_value[b] = score.pvalue
+        except ValueError as e:
+            row_p_value[b] = 1.0
     return a, row, row_p_value
 
 def cotransition(n_job, tvx, tvy = None, consecutive = True):
@@ -299,5 +302,5 @@ def SVD_phy(dfx, truncation = 0.5):
         for j in range(0, len(U_truncated)):
             SVDphy_distance[i][j] = np.sqrt(np.sum((subset_U[i] - U_truncated[j])**2))
     SVDphy_distance = pd.DataFrame(SVDphy_distance, index=row_labels, columns=col_labels)
-    SVDphy_distance = SVDphy_distance.fillna(SVDphy_distance.to_numpy().nanmax())
+    SVDphy_distance = SVDphy_distance.fillna(np.nanmax(SVDphy_distance.to_numpy()))
     return SVDphy_distance
