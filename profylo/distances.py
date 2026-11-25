@@ -161,80 +161,71 @@ def mi(dfx, dfy = None):
     mi_distance = mi_distance.fillna(0)
     return mi_distance
 
+def preprocess_transitions(X, consecutive=True):
+    if consecutive:
+        return X
 
-def cotransition_loop(tvx, tvy, a, i, symetry, consecutive):
-    query = tvx.loc[i]
-    row = np.zeros(len(tvy.index))
-    row_p_value = np.zeros(len(tvy.index))
-    for b,j in enumerate(tvy.index):
-        if symetry and b<a:
-            continue
-        
-        t1 = 0
-        t2 = 0
-        c = 0
-        d = 0
-        k = 0
-        v1 = np.array(tvx.loc[i])
-        v2 = np.array(tvy.loc[j])
-        if consecutive == True :
-            t1 = np.count_nonzero(v1)
-            t2 = np.count_nonzero(v2)
-            nonz = (v1 != 0) & (v2 != 0)
-            c = np.sum(v1[nonz]==v2[nonz])
-            d = np.count_nonzero(v1[nonz]-v2[nonz])
-            k = c - d
-        elif consecutive ==  False:
-            v1d = np.insert(v1, 0, [0])
-            v1dd = np.insert(v1d, 0, [0])
-            v2d = np.insert(v2, 0, [0])
-            v2dd = np.insert(v2d, 0, [0])
-            v1 = np.insert(v1, len(v1), [0, 0])
-            v1d = np.insert(v1d, len(v1d), [0])
-            v2 = np.insert(v2, len(v2), [0, 0])
-            v2d = np.insert(v2d, len(v2d), [0])
-            t1 = np.count_nonzero(v1) - np.sum((v1 != 0) & (v1d != 0)) + np.sum((v1 !=0) & (v1d != 0) & (v1dd != 0))
-            t2 = np.count_nonzero(v2) - np.sum((v2 != 0) & (v2d != 0)) + np.sum((v2 !=0) & (v2d != 0) & (v2dd != 0))
-            nonza = (v1 != 0) & (v2 != 0) & (v1d  == 0) & (v2d == 0)
-            nonzb1 = (v1 != 0) & (v2 != 0) & (v1d  == 0)
-            nonzb2 = (v1 != 0) & (v2 != 0) & (v2d  == 0)
-            nonzc1 = ((v1 != 0) & (v2 != 0)) & ((v1d  != 0) & (v1dd  != 0))
-            nonzc2 = ((v1 != 0) & (v2 != 0)) & ((v2d  != 0) & (v2dd  != 0))
-            nonz = nonza | (nonzc1 & nonzc2) | (nonzb1 & nonzb2) | (nonzb1 & nonzc2) | (nonzb2 & nonzc1)
-            c = np.sum(v1[nonz]==v2[nonz])
-            d = np.count_nonzero(v1[nonz]-v2[nonz])
-            k = c - d
-        if t1 == 0 and t2 == 0:
-            row[b] = None
-        else:
-            row[b] = k / (t1 + t2 - abs(k))
-            #tableau de contingence:
-        contingency_table = [[abs(k),t1-abs(k)], [t2-abs(k),(len(tvx.columns))-t1-t2+abs(k)]]
-        score = fisher_exact(contingency_table, alternative="greater")
-        row_p_value[b] = score.pvalue
-    return a, row, row_p_value
+    nonzero = X != 0
 
-def cotransition(n_job, tvx, tvy = None, consecutive = True):
-    symetry = False
+    previous = np.zeros_like(nonzero)
+    previous[:, 1:] = nonzero[:, :-1]
+
+    previous2 = np.zeros_like(nonzero)
+    previous2[:, 2:] = nonzero[:, :-2]
+
+    second_in_run = nonzero & previous & ~previous2
+
+    return np.where(second_in_run, 0, X)
+
+def concordance(X, Y=None, block_size=1024):
+    if Y is None:
+        Y = X
+
+    X = np.asarray(X, dtype=np.float32)
+    Y = np.asarray(Y, dtype=np.float32)
+
+    n, m = X.shape[0], Y.shape[0]
+
+    K = np.empty((n, m), dtype=np.float32)
+
+    for i in range(0, n, block_size):
+        end = min(i + block_size, n)
+
+        K[i:end] = X[i:end] @ Y.T
+
+    return K
+
+def cotransition(tvx, tvy=None, consecutive=True):
     if tvy is None:
-        symetry = True
         tvy = tvx
-    task = [delayed(cotransition_loop)(tvx, tvy, a, i, symetry, consecutive) for a,i in enumerate(tvx.index)]
-    out = Parallel(n_job)(task)
-    cotransition_scores = np.zeros((len(tvx.index), len(tvy.index)))
-    p_values = np.zeros((len(tvx.index), len(tvy.index)))
-    for a, row, row_p_value in out:
-        for b in range(a, len(tvx.index)):
-            cotransition_scores[a, b] = row[b]
-            if symetry:
-                cotransition_scores[b, a] = row[b]
-            p_values[a, b] = row_p_value[b]
-            if symetry:
-                p_values[b, a] = row_p_value[b]
-    df_cotransition = pd.DataFrame(cotransition_scores, index=tvx.index , columns=tvy.index).fillna(0)
-    df_p_values = pd.DataFrame(p_values, index=tvx.index , columns=tvy.index)
-    return df_cotransition, df_p_values
 
+    X = tvx.to_numpy(dtype=np.float64)
+    Y = tvy.to_numpy(dtype=np.float64)
+
+    X = preprocess_transitions(X, consecutive)
+    Y = preprocess_transitions(Y, consecutive)
+
+    print("Pre-processing done...")
+
+    tx = np.count_nonzero(X, axis=1)
+    ty = np.count_nonzero(Y, axis=1)
+
+    K = concordance(X, Y)
+
+    denominator = tx[:, None] + ty[None, :] - np.abs(K)
+
+    scores = np.divide(
+        K,
+        denominator,
+        out=np.zeros_like(K),
+        where=denominator != 0
+    )
+
+    return pd.DataFrame(
+        scores,
+        index=tvx.index,
+        columns=tvy.index
+    )
 
 def pcs_loop(tvx, tvy, a, i, symetry, confidence, penalty):
     query = tvx.loc[i]
